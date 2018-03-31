@@ -20,7 +20,9 @@
 #define WINDOW_H_
 #include <EGL/egl.h>
 
-EGLNativeWindowType bee__window_create();
-void bee__window_destroy(EGLNativeWindowType window);
+void bee__init_window();
+void bee__update_window();
+
+EGLNativeWindowType bee__get_window();
 
 #endif

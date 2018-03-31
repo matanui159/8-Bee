@@ -21,6 +21,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static PCWSTR g_class_name = L"8bee";
+static HWND g_window;
+
 static void win32_error() {
 	DWORD error = GetLastError();
 	PSTR message;
@@ -28,34 +31,48 @@ static void win32_error() {
 			NULL, error, 0, (PSTR)&message, 0, NULL) == 0) {
 		fprintf(stderr, "%s\n", message);
 	} else {
-		fprintf(stderr, "%i (%i)", error, GetLastError());
+		fprintf(stderr, "%li (%li)", error, GetLastError());
 	}
 	exit(EXIT_FAILURE);
 }
 
-static LRESULT CALLBACK window_proc(HWND, wnd, UINT msg, WPARAM wpm, LPARAM lpm) {
+static void exit_class() {
+	UnregisterClassW(g_class_name, GetModuleHandleW(NULL));
+}
+
+static void exit_window() {
+	DestroyWindow(g_window);
+}
+
+static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) {
+	switch (msg) {
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+	}
 	return DefWindowProcW(wnd, msg, wpm, lpm);
 }
 
-EGLNativeWindowType bee__window_create() {
+void bee__init_window() {
 	HINSTANCE instance = GetModuleHandleW(NULL);
 
 	WNDCLASSW window_class = {CS_OWNDC};
 	window_class.hInstance = instance;
-	window_class.lpszClassName = L"8bee";
+	window_class.lpszClassName = g_class_name;
 	window_class.lpfnWndProc = window_proc;
-	window_class.hIcon = LoadIconW(NULL, IDC_ARROW);
+	window_class.hCursor = LoadCursorW(NULL, (PWSTR)IDC_ARROW);
 
 	if (RegisterClassW(&window_class) == 0) {
 		win32_error();
 	}
+	atexit(exit_class);
 
 	RECT rect = {0, 0, 512, 512};
 	DWORD style = WS_CAPTION | WS_SYSMENU | WS_VISIBLE;
-	AdjustWindowRect(&rect, style);
+	AdjustWindowRect(&rect, style, FALSE);
 
-	HWND window = CreateWindowW(
-			window_class.lpszClassName,
+	g_window = CreateWindowW(
+			g_class_name,
 			L"",
 			style,
 			0, 0,
@@ -66,12 +83,22 @@ EGLNativeWindowType bee__window_create() {
 			NULL
 	);
 
-	if (window == NULL) {
+	if (g_window == NULL) {
 		win32_error();
 	}
-	return window;
+	atexit(exit_window);
 }
 
-void bee__window_destroy(EGLNativeWindowType window) {
-	DestroyWindow(window);
+void bee__update_window() {
+	MSG msg;
+	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
+		DispatchMessageW(&msg);
+		if (msg.message == WM_QUIT) {
+			exit(0);
+		}
+	}
+}
+
+EGLNativeWindowType bee__get_window() {
+	return g_window;
 }

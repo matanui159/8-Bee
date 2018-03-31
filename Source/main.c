@@ -1,5 +1,5 @@
 /*
- * display.h
+ * main.c
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,10 +16,14 @@
  * limitations under the License.
  */
 
-#ifndef DISPLAY_H_
-#define DISPLAY_H_
+#include "display.h"
+#include "window.h"
 
-void bee__init_display();
-void bee__update_display();
+int main(int argc, char* argv[]) {
+	bee__init_window();
+	bee__init_display();
 
-#endif
+	for (;;) {
+		bee__update_window();
+	}
+}
