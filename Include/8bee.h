@@ -19,6 +19,14 @@
 #ifndef _8BEE_H_
 #define _8BEE_H_
 
-
+/*
+ * 2B OR NOT 2B (a bad poem about denial)
+ *   no machine core
+ *   humanity lives
+ *   not executer
+ *   she lives
+ *
+ *   not 2B, 8 Bee
+ */
 
 #endif
