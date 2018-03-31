@@ -44,9 +44,9 @@ static void egl_error() {
 
 	EGLint error = eglGetError();
 	if (error > last_error) {
-		fprintf(stderr, "%s\n", error_messages[error - first_error]);
-	} else {
 		fprintf(stderr, "%i (Unknown error)\n", error);
+	} else {
+		fprintf(stderr, "%s\n", error_messages[error - first_error]);
 	}
 	exit(EXIT_FAILURE);
 }
@@ -82,14 +82,22 @@ void bee__init_display() {
 		fprintf(stderr, "No supported config\n");
 	}
 
-	// surface/context
+	// surface
+	EGLSurface surface = eglCreateWindowSurface(display, config, bee__get_window(), NULL);
+	if (surface == EGL_NO_SURFACE) {
+		egl_error();
+	}
+
+	// context
 	static const EGLint context_attribs[] = {
 			EGL_CONTEXT_CLIENT_VERSION, 2,
 			EGL_NONE
 	};
 
-	EGLSurface surface = eglCreateWindowSurface(display, config, bee__get_window(), NULL);
 	EGLContext context = eglCreateContext(display, config, NULL, context_attribs);
+	if (context == EGL_NO_CONTEXT) {
+		egl_error();
+	}
 	eglMakeCurrent(display, surface, surface, context);
 }
 

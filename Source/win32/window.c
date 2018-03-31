@@ -27,7 +27,7 @@ static HWND g_window;
 static void win32_error() {
 	DWORD error = GetLastError();
 	PSTR message;
-	if (FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+	if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL, error, 0, (PSTR)&message, 0, NULL) == 0) {
 		fprintf(stderr, "%s\n", message);
 	} else {
@@ -75,7 +75,8 @@ void bee__init_window() {
 			g_class_name,
 			L"",
 			style,
-			0, 0,
+			CW_USEDEFAULT,
+			CW_USEDEFAULT,
 			rect.right - rect.left,
 			rect.bottom - rect.top,
 			NULL, NULL,
