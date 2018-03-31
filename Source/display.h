@@ -19,7 +19,7 @@
 #ifndef DISPLAY_H_
 #define DISPLAY_H_
 
-void bee__init_display();
-void bee__update_display();
+void bee__display_init();
+void bee__display_update();
 
 #endif

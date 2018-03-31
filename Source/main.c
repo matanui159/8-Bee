@@ -20,10 +20,10 @@
 #include "window.h"
 
 int main(int argc, char* argv[]) {
-	bee__init_window();
-	bee__init_display();
+	bee__window_init();
+	bee__display_init();
 
 	for (;;) {
-		bee__update_window();
+		bee__window_update();
 	}
 }

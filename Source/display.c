@@ -51,18 +51,18 @@ static void egl_error() {
 	exit(EXIT_FAILURE);
 }
 
-static void exit_display() {
+static void display_exit() {
 	eglReleaseThread();
 	eglTerminate(eglGetDisplay(EGL_DEFAULT_DISPLAY));
 }
 
-void bee__init_display() {
+void bee__display_init() {
 	// display
 	EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (!eglInitialize(display, NULL, NULL)) {
 		egl_error();
 	}
-	atexit(exit_display);
+	atexit(display_exit);
 
 	// config
 	static const EGLint config_attribs[] = {
@@ -83,7 +83,7 @@ void bee__init_display() {
 	}
 
 	// surface
-	EGLSurface surface = eglCreateWindowSurface(display, config, bee__get_window(), NULL);
+	EGLSurface surface = eglCreateWindowSurface(display, config, bee__window_get(), NULL);
 	if (surface == EGL_NO_SURFACE) {
 		egl_error();
 	}
@@ -101,5 +101,5 @@ void bee__init_display() {
 	eglMakeCurrent(display, surface, surface, context);
 }
 
-void bee__update_display() {
+void bee__display_update() {
 }

@@ -36,11 +36,11 @@ static void win32_error() {
 	exit(EXIT_FAILURE);
 }
 
-static void exit_class() {
+static void class_exit() {
 	UnregisterClassW(g_class_name, GetModuleHandleW(NULL));
 }
 
-static void exit_window() {
+static void window_exit() {
 	DestroyWindow(g_window);
 }
 
@@ -53,7 +53,7 @@ static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) 
 	return DefWindowProcW(wnd, msg, wpm, lpm);
 }
 
-void bee__init_window() {
+void bee__window_init() {
 	HINSTANCE instance = GetModuleHandleW(NULL);
 
 	WNDCLASSW window_class = {CS_OWNDC};
@@ -65,7 +65,7 @@ void bee__init_window() {
 	if (RegisterClassW(&window_class) == 0) {
 		win32_error();
 	}
-	atexit(exit_class);
+	atexit(class_exit);
 
 	RECT rect = {0, 0, 512, 512};
 	DWORD style = WS_CAPTION | WS_SYSMENU | WS_VISIBLE;
@@ -87,10 +87,10 @@ void bee__init_window() {
 	if (g_window == NULL) {
 		win32_error();
 	}
-	atexit(exit_window);
+	atexit(window_exit);
 }
 
-void bee__update_window() {
+void bee__window_update() {
 	MSG msg;
 	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 		DispatchMessageW(&msg);
@@ -100,6 +100,6 @@ void bee__update_window() {
 	}
 }
 
-EGLNativeWindowType bee__get_window() {
+EGLNativeWindowType bee__window_get() {
 	return g_window;
 }
