@@ -19,6 +19,10 @@
 #ifndef _8BEE_H_
 #define _8BEE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void (*bee_callback_t)(void* data);
 
 typedef struct bee_sprite_t {
@@ -47,5 +51,9 @@ void bee_identity();
 void bee_translate(int x, int y);
 void bee_scale(int w, int h);
 void bee_rotate(int angle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
