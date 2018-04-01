@@ -47,7 +47,7 @@ static void window_exit() {
 static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) {
 	switch (msg) {
 	case WM_DESTROY:
-		PostQuitMessage(0);
+		PostQuitMessage(EXIT_SUCCESS);
 		break;
 	}
 	return DefWindowProcW(wnd, msg, wpm, lpm);
@@ -68,7 +68,7 @@ void bee__window_init() {
 	atexit(class_exit);
 
 	RECT rect = {0, 0, 512, 512};
-	DWORD style = WS_CAPTION | WS_SYSMENU | WS_VISIBLE;
+	DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
 	AdjustWindowRect(&rect, style, FALSE);
 
 	g_window = CreateWindowW(
@@ -95,7 +95,7 @@ void bee__window_update() {
 	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 		DispatchMessageW(&msg);
 		if (msg.message == WM_QUIT) {
-			exit(0);
+			exit(msg.wParam);
 		}
 	}
 }
