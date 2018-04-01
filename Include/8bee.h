@@ -19,14 +19,31 @@
 #ifndef _8BEE_H_
 #define _8BEE_H_
 
-/*
- * 2B OR NOT 2B (a bad poem about denial)
- *   no machine core
- *   humanity lives
- *   not executer
- *   she lives
- *
- *   not 2B, 8 Bee
- */
+typedef void (*bee_callback_t)(void* data);
+
+typedef struct bee_sprite_t {
+	int x;
+	int y;
+	int w;
+	int h;
+	int mask;
+} bee_sprite_t;
+
+typedef struct bee_clip_t {
+	int* samples;
+	int length;
+} bee_clip_t;
+
+void bee_scene(bee_callback_t scene, void* data);
+
+void bee_push();
+void bee_pop();
+void bee_identity();
+void bee_translate(int x, int y);
+void bee_scale(int w, int h);
+void bee_rotate(int angle);
+void bee_draw(bee_sprite_t* sprite);
+
+void bee_play(bee_clip_t* clip, bee_callback_t end);
 
 #endif
