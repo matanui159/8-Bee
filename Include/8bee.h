@@ -34,6 +34,7 @@ typedef struct bee_clip_t {
 	int length;
 } bee_clip_t;
 
+void bee_main(void* data);
 void bee_scene(bee_callback_t scene, void* data);
 unsigned char bee_input();
 void bee_draw(bee_sprite_t* sprite);

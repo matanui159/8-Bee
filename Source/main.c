@@ -16,8 +16,17 @@
  * limitations under the License.
  */
 
+#include <8bee.h>
 #include "display.h"
 #include "window.h"
+
+static bee_callback_t g_scene = bee_main;
+static void* g_scene_data;
+
+void bee_scene(bee_callback_t scene, void* data) {
+	g_scene = scene;
+	g_scene_data = data;
+}
 
 int main(int argc, char* argv[]) {
 	bee__window_init();
@@ -25,5 +34,7 @@ int main(int argc, char* argv[]) {
 
 	for (;;) {
 		bee__window_update();
+		g_scene(g_scene_data);
+		bee__display_update();
 	}
 }
