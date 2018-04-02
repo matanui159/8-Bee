@@ -60,12 +60,12 @@ void bee__shader_init() {
 
 			void main() {
 				texcoord = f_texcoord;
-				pos = mat3(
+				vec3 tpos = mat3(
 						mat0.x, mat1.x, 0,
 						mat0.y, mat1.y, 0,
 						mat0.z, mat1.z, 1
 				) * vec3(pos, 1);
-				gl_Position = vec4(pos.xy, 0, pos.z);
+				gl_Position = vec4(tpos.xy, 0, tpos.z);
 			}
 	));
 

@@ -17,8 +17,13 @@
  */
 
 #include <8bee.h>
-#include "display.h"
 #include "window.h"
+#include "display.h"
+#include "shader.h"
+
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <stdio.h>
 
 static bee_callback_t g_scene = bee_main;
 static void* g_scene_data;
@@ -31,6 +36,7 @@ void bee_scene(bee_callback_t scene, void* data) {
 int main(int argc, char* argv[]) {
 	bee__window_init();
 	bee__display_init();
+	bee__shader_init();
 
 	for (;;) {
 		bee__window_update();
