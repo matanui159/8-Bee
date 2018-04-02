@@ -17,6 +17,7 @@
  */
 
 #include "../window.h"
+#include "../error.h"
 #include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,11 +28,12 @@ static HWND g_window;
 static void win32_error() {
 	DWORD error = GetLastError();
 	char* message;
-	if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+	if (FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL, error, 0, (char*)&message, 0, NULL) == 0) {
-		fprintf(stderr, "%s\n", message);
+		bee__error("Unknown error");
 	} else {
-		fprintf(stderr, "%li (%li)", error, GetLastError());
+		bee__error(message);
+		LocalFree(message);
 	}
 	exit(EXIT_FAILURE);
 }

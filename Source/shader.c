@@ -17,6 +17,7 @@
  */
 
 #include "shader.h"
+#include "error.h"
 #include <GLES2/gl2.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,7 +26,7 @@
 
 static GLuint g_program;
 
-static void shader_check_error(GLuint object, GLenum STATUS, PFNGLGETSHADERIVPROC Getiv, PFNGLGETSHADERINFOLOGPROC GetInfoLog) {
+static _Bool shader_check_error(GLuint object, GLenum STATUS, PFNGLGETSHADERIVPROC Getiv, PFNGLGETSHADERINFOLOGPROC GetInfoLog) {
 	GLint status;
 	Getiv(object, STATUS, &status);
 	if (!status) {
@@ -33,9 +34,11 @@ static void shader_check_error(GLuint object, GLenum STATUS, PFNGLGETSHADERIVPRO
 		Getiv(object, GL_INFO_LOG_LENGTH, &length);
 		char* message = malloc(length);
 		GetInfoLog(object, length, NULL, message);
-		fprintf(stderr, "%s\n", message);
-		exit(EXIT_FAILURE);
+		bee__error(message);
+		free(message);
+		return 1;
 	}
+	return 0;
 }
 
 static void shader_exit() {
@@ -46,7 +49,10 @@ static GLuint shader_compile(GLenum type, const char* code) {
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &code, NULL);
 	glCompileShader(shader);
-	shader_check_error(shader, GL_COMPILE_STATUS, glGetShaderiv, glGetShaderInfoLog);
+	if (shader_check_error(shader, GL_COMPILE_STATUS, glGetShaderiv, glGetShaderInfoLog)) {
+		glDeleteShader(shader);
+		return 0;
+	}
 	return shader;
 }
 
@@ -68,6 +74,9 @@ void bee__shader_init() {
 				gl_Position = vec4(tpos.xy, 0, tpos.z);
 			}
 	));
+	if (vertex == 0) {
+		exit(EXIT_FAILURE);
+	}
 
 	GLuint fragment = shader_compile(GL_FRAGMENT_SHADER, GLSL(
 			precision mediump float;
@@ -78,6 +87,10 @@ void bee__shader_init() {
 				gl_FragColor = texture2D(texture, texcoord);
 			}
 	));
+	if (fragment == 0) {
+		glDeleteShader(vertex);
+		exit(EXIT_FAILURE);
+	}
 
 	g_program = glCreateProgram();
 	atexit(shader_exit);
@@ -88,5 +101,8 @@ void bee__shader_init() {
 	glDetachShader(g_program, fragment);
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
-	shader_check_error(g_program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog);
+	glReleaseShaderCompiler();
+	if (shader_check_error(g_program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog)) {
+		exit(EXIT_FAILURE);
+	}
 }

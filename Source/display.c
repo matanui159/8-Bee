@@ -18,6 +18,7 @@
 
 #include "display.h"
 #include "window.h"
+#include "error.h"
 #include <EGL/egl.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,9 +45,9 @@ static void egl_error() {
 
 	EGLint error = eglGetError();
 	if (error > last_error) {
-		fprintf(stderr, "%i (Unknown error)\n", error);
+		bee__error("Unknown error");
 	} else {
-		fprintf(stderr, "%s\n", error_messages[error - first_error]);
+		bee__error(error_messages[error - first_error]);
 	}
 	exit(EXIT_FAILURE);
 }
