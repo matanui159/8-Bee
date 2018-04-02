@@ -17,16 +17,28 @@
  */
 
 #include <8bee.h>
+#include "error.h"
 #include "window.h"
 #include "display.h"
 #include "shader.h"
-
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
-#include <stdio.h>
+#include <signal.h>
 
 static bee_callback_t g_scene = bee_main;
 static void* g_scene_data;
+
+static void signal_error(int signal) {
+	switch (signal) {
+	case SIGILL:
+		bee__error("Illegal operation");
+		break;
+	case SIGSEGV:
+		bee__error("Segment fault");
+		break;
+	case SIGFPE:
+		bee__error("Floating point error");
+		break;
+	}
+}
 
 void bee_scene(bee_callback_t scene, void* data) {
 	g_scene = scene;
@@ -34,6 +46,10 @@ void bee_scene(bee_callback_t scene, void* data) {
 }
 
 int main(int argc, char* argv[]) {
+	signal(SIGILL, signal_error);
+	signal(SIGSEGV, signal_error);
+	signal(SIGFPE, signal_error);
+
 	bee__window_init();
 	bee__display_init();
 	bee__shader_init();

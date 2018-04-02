@@ -17,8 +17,8 @@
  */
 
 #include "display.h"
-#include "window.h"
 #include "error.h"
+#include "window.h"
 #include <EGL/egl.h>
 #include <stdlib.h>
 #include <stdio.h>
