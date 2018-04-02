@@ -21,14 +21,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static PCWSTR g_class_name = L"8bee";
+static const WCHAR g_class_name[] = L"8bee";
 static HWND g_window;
 
 static void win32_error() {
 	DWORD error = GetLastError();
-	PSTR message;
+	char* message;
 	if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, error, 0, (PSTR)&message, 0, NULL) == 0) {
+			NULL, error, 0, (char*)&message, 0, NULL) == 0) {
 		fprintf(stderr, "%s\n", message);
 	} else {
 		fprintf(stderr, "%li (%li)", error, GetLastError());
