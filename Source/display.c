@@ -22,6 +22,9 @@
 #include <EGL/egl.h>
 #include <stdlib.h>
 
+static EGLDisplay g_display;
+static EGLSurface g_surface;
+
 static void egl_error() {
 	static EGLint first_error = 0x3001;
 	static EGLint last_error = 0x300E;
@@ -53,13 +56,13 @@ static void egl_error() {
 
 static void display_exit() {
 	eglReleaseThread();
-	eglTerminate(eglGetDisplay(EGL_DEFAULT_DISPLAY));
+	eglTerminate(g_display);
 }
 
 void bee__display_init() {
 	// display
-	EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	if (!eglInitialize(display, NULL, NULL)) {
+	g_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	if (!eglInitialize(g_display, NULL, NULL)) {
 		egl_error();
 	}
 	atexit(display_exit);
@@ -75,7 +78,7 @@ void bee__display_init() {
 
 	EGLConfig config;
 	EGLint count;
-	if (!eglChooseConfig(display, config_attribs, &config, 1, &count)) {
+	if (!eglChooseConfig(g_display, config_attribs, &config, 1, &count)) {
 		egl_error();
 	}
 	if (count < 1) {
@@ -84,7 +87,7 @@ void bee__display_init() {
 	}
 
 	// surface
-	EGLSurface surface = eglCreateWindowSurface(display, config, bee__window_get(), NULL);
+	g_surface = eglCreateWindowSurface(g_display, config, bee__window_get(), NULL);
 	if (surface == EGL_NO_SURFACE) {
 		egl_error();
 	}
@@ -95,12 +98,13 @@ void bee__display_init() {
 			EGL_NONE
 	};
 
-	EGLContext context = eglCreateContext(display, config, NULL, context_attribs);
+	EGLContext context = eglCreateContext(g_display, config, NULL, context_attribs);
 	if (context == EGL_NO_CONTEXT) {
 		egl_error();
 	}
-	eglMakeCurrent(display, surface, surface, context);
+	eglMakeCurrent(g_display, g_surface, g_surface, context);
 }
 
 void bee__display_update() {
+	eglSwapBuffers(g_display, g_surface);
 }
