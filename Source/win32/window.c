@@ -37,14 +37,6 @@ static void win32_error() {
 	exit(EXIT_FAILURE);
 }
 
-static void class_exit() {
-	UnregisterClassW(g_class_name, GetModuleHandleW(NULL));
-}
-
-static void window_exit() {
-	DestroyWindow(g_window);
-}
-
 static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) {
 	switch (msg) {
 	case WM_DESTROY:
@@ -52,6 +44,14 @@ static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) 
 		break;
 	}
 	return DefWindowProcW(wnd, msg, wpm, lpm);
+}
+
+static void class_exit() {
+	UnregisterClassW(g_class_name, GetModuleHandleW(NULL));
+}
+
+static void window_exit() {
+	DestroyWindow(g_window);
 }
 
 void bee__window_init() {

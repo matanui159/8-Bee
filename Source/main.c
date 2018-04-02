@@ -18,9 +18,11 @@
 
 #include <8bee.h>
 #include "error.h"
+#include "transform.h"
 #include "window.h"
 #include "display.h"
 #include "shader.h"
+#include "video.h"
 #include <signal.h>
 
 static bee_callback_t g_scene = bee_main;
@@ -50,9 +52,11 @@ int main(int argc, char* argv[]) {
 	signal(SIGSEGV, signal_error);
 	signal(SIGFPE, signal_error);
 
+	bee__transform_init();
 	bee__window_init();
 	bee__display_init();
 	bee__shader_init();
+	bee__video_init();
 
 	for (;;) {
 		bee__window_update();

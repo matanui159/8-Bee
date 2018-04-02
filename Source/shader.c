@@ -41,10 +41,6 @@ static _Bool shader_check_error(GLuint object, GLenum STATUS, PFNGLGETSHADERIVPR
 	return 0;
 }
 
-static void shader_exit() {
-	glDeleteProgram(g_program);
-}
-
 static GLuint shader_compile(GLenum type, const char* code) {
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &code, NULL);
@@ -54,6 +50,10 @@ static GLuint shader_compile(GLenum type, const char* code) {
 		return 0;
 	}
 	return shader;
+}
+
+static void shader_exit() {
+	glDeleteProgram(g_program);
 }
 
 void bee__shader_init() {
@@ -96,11 +96,17 @@ void bee__shader_init() {
 	atexit(shader_exit);
 	glAttachShader(g_program, vertex);
 	glAttachShader(g_program, fragment);
+	glBindAttribLocation(g_program, 0, "mat0");
+	glBindAttribLocation(g_program, 1, "mat1");
+	glBindAttribLocation(g_program, 2, "pos");
+	glBindAttribLocation(g_program, 3, "t_texcoord");
 	glLinkProgram(g_program);
+
 	glDetachShader(g_program, vertex);
 	glDetachShader(g_program, fragment);
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
+	glUseProgram(g_program);
 	glReleaseShaderCompiler();
 	if (shader_check_error(g_program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog)) {
 		exit(EXIT_FAILURE);

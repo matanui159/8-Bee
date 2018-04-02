@@ -88,7 +88,7 @@ void bee__display_init() {
 
 	// surface
 	g_surface = eglCreateWindowSurface(g_display, config, bee__window_get(), NULL);
-	if (surface == EGL_NO_SURFACE) {
+	if (g_surface == EGL_NO_SURFACE) {
 		egl_error();
 	}
 
