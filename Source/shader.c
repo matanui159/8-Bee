@@ -34,7 +34,7 @@ static _Bool shader_check_error(GLuint object, GLenum STATUS, PFNGLGETSHADERIVPR
 		Getiv(object, GL_INFO_LOG_LENGTH, &length);
 		char* message = malloc(length);
 		GetInfoLog(object, length, NULL, message);
-		bee__error(message);
+		bee__error("GLSL: %s", message);
 		free(message);
 		return 1;
 	}

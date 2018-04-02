@@ -21,7 +21,6 @@
 #include "window.h"
 #include <EGL/egl.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 static void egl_error() {
 	static EGLint first_error = 0x3001;
@@ -44,10 +43,10 @@ static void egl_error() {
 	};
 
 	EGLint error = eglGetError();
-	if (error > last_error) {
-		bee__error("Unknown error");
+	if (error >= first_error && error <= last_error) {
+		bee__error("EGL: %s", error_messages[error - first_error]);
 	} else {
-		bee__error(error_messages[error - first_error]);
+		bee__error("EGL: %i (Unknown error)", error);
 	}
 	exit(EXIT_FAILURE);
 }
@@ -80,7 +79,8 @@ void bee__display_init() {
 		egl_error();
 	}
 	if (count < 1) {
-		fprintf(stderr, "No supported config\n");
+		 bee__error("EGL: No supported config");
+		 exit(EXIT_FAILURE);
 	}
 
 	// surface

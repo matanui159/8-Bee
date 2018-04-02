@@ -1,5 +1,5 @@
 /*
- * error.h
+ * error.c
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,16 +16,27 @@
  * limitations under the License.
  */
 
-#ifndef ERROR_H_
-#define ERROR_H_
+#include "error.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
 
-#ifdef __GNUC__
-#	define BEE__ERROR_FORMAT __attribute__((format(printf, 1, 2)))
-#else
-#	define BEE__ERROR_FORMAT
-#endif
+void bee__error(const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	vfprintf(stderr, format, args);
+	fflush(stderr);
+	va_end(args);
 
-void bee__error_native(const char* message);
-void bee__error(const char* format, ...) BEE__ERROR_FORMAT;
+	va_start(args, format);
+	int length = vsnprintf(NULL, 0, format, args) + 1;
+	va_end(args);
 
-#endif
+	char* message = malloc(length);
+	va_start(args, format);
+	vsnprintf(message, length, format, args);
+	va_end(args);
+
+	bee__error_native(message);
+	free(message);
+}

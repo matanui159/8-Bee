@@ -20,6 +20,6 @@
 #include "../window.h"
 #include <windows.h>
 
-void bee__error(const char* message) {
+void bee__error_native(const char* message) {
 	MessageBoxA(bee__window_get(), message, NULL, MB_ICONERROR);
 }

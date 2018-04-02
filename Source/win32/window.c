@@ -20,7 +20,6 @@
 #include "../error.h"
 #include <windows.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 static const WCHAR g_class_name[] = L"8bee";
 static HWND g_window;
@@ -30,9 +29,9 @@ static void win32_error() {
 	char* message;
 	if (FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL, error, 0, (char*)&message, 0, NULL) == 0) {
-		bee__error("Unknown error");
+		bee__error("WIN32: %li (%li)", error, GetLastError());
 	} else {
-		bee__error(message);
+		bee__error("WIN32: %s", message);
 		LocalFree(message);
 	}
 	exit(EXIT_FAILURE);

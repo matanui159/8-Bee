@@ -29,13 +29,13 @@ static void* g_scene_data;
 static void signal_error(int signal) {
 	switch (signal) {
 	case SIGILL:
-		bee__error("Illegal operation");
+		bee__error("SIG: Illegal operation");
 		break;
 	case SIGSEGV:
-		bee__error("Segment fault");
+		bee__error("SIG: Segment fault");
 		break;
 	case SIGFPE:
-		bee__error("Floating point error");
+		bee__error("SIG: Floating point error");
 		break;
 	}
 }
