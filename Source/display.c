@@ -26,9 +26,9 @@ static EGLDisplay g_display;
 static EGLSurface g_surface;
 
 static void egl_error() {
-	static EGLint first_error = 0x3001;
-	static EGLint last_error = 0x300E;
-	static const char* error_messages[] = {
+	static const EGLint first_error = 0x3001;
+	static const EGLint last_error = 0x300E;
+	static const char* const error_messages[] = {
 			"Not initialized",
 			"Bad access",
 			"Bad alloc",
