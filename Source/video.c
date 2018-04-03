@@ -37,7 +37,6 @@ typedef struct elem_t {
 static const GLuint g_framebuffer = 1;
 static const GLuint g_texdata = 2;
 static const GLuint g_quad = 1;
-static const GLuint g_buffer = 2;
 
 static elem_t g_buffer_data[1];
 
@@ -84,7 +83,7 @@ static void video_exit() {
 	glDeleteTextures(1, &g_framebuffer);
 	glDeleteTextures(1, &g_texdata);
 	glDeleteBuffers(1, &g_quad);
-	glDeleteBuffers(1, &g_buffer);
+//	glDeleteBuffers(1, &g_buffer);
 }
 
 void bee__video_init() {
@@ -111,16 +110,7 @@ void bee__video_init() {
 	glBindBuffer(GL_ARRAY_BUFFER, g_quad);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_data), quad_data, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(bee__shader_pos);
-	glVertexAttribPointer(bee__shader_pos, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, g_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_buffer_data), NULL, GL_STREAM_DRAW);
-	glEnableVertexAttribArray(bee__shader_mat0);
-	glEnableVertexAttribArray(bee__shader_mat1);
-	glEnableVertexAttribArray(bee__shader_sprite);
-	glVertexAttribPointer(bee__shader_mat0, 3, GL_FLOAT, GL_FALSE, sizeof(elem_t), (void*)offsetof(elem_t, matrix.m00));
-	glVertexAttribPointer(bee__shader_mat1, 3, GL_FLOAT, GL_FALSE, sizeof(elem_t), (void*)offsetof(elem_t, matrix.m10));
-	glVertexAttribPointer(bee__shader_sprite, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(elem_t), (void*)offsetof(elem_t, sprite));
+	glVertexAttribPointer(bee__shader_pos, 2, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 void bee__video_data(unsigned char* data) {
@@ -135,8 +125,15 @@ void bee__video_data(unsigned char* data) {
 }
 
 static void video_flush() {
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_buffer_data), g_buffer_data, GL_STREAM_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(g_buffer_data), g_buffer_data);
+	elem_t* elem = g_buffer_data;
+	glVertexAttrib3fv(bee__shader_mat0, &elem->matrix.m00);
+	glVertexAttrib3fv(bee__shader_mat1, &elem->matrix.m10);
+	glVertexAttrib4f(bee__shader_sprite,
+			elem->sprite.x0 / 255.0,
+			elem->sprite.y0 / 255.0,
+			elem->sprite.x1 / 255.0,
+			elem->sprite.y1 / 255.0
+	);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
