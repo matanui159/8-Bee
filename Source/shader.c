@@ -17,10 +17,9 @@
  */
 
 #include "shader.h"
-#include "error.h"
+#include "glext/debug.h"
 #include <GLES2/gl2.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #define GLSL(code) #code
 
@@ -31,29 +30,31 @@ const GLuint bee__shader_sprite = 3;
 
 static GLuint g_program;
 
-static _Bool shader_check_error(GLuint object, GLenum STATUS, PFNGLGETSHADERIVPROC Getiv, PFNGLGETSHADERINFOLOGPROC GetInfoLog) {
-	GLint status;
-	Getiv(object, STATUS, &status);
-	if (!status) {
+static void shader_check_error(GLuint object, GLenum STATUS, PFNGLGETSHADERIVPROC Getiv, PFNGLGETSHADERINFOLOGPROC GetInfoLog) {
+	if (GL_debug) {
 		GLint length;
 		Getiv(object, GL_INFO_LOG_LENGTH, &length);
-		char* message = malloc(length);
-		GetInfoLog(object, length, NULL, message);
-		bee__error("GLSL: %s", message);
-		free(message);
-		return 1;
+		if (length > 1) {
+			GLint status;
+			Getiv(object, STATUS, &status);
+			GLenum severity = GL_DEBUG_SEVERITY_HIGH;
+			if (status) {
+				severity = GL_DEBUG_SEVERITY_LOW;
+			}
+
+			char message[length];
+			GetInfoLog(object, length, NULL, message);
+			glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_OTHER, EXIT_FAILURE, severity,
+					length - 1, message);
+		}
 	}
-	return 0;
 }
 
 static GLuint shader_compile(GLenum type, const char* code) {
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &code, NULL);
 	glCompileShader(shader);
-	if (shader_check_error(shader, GL_COMPILE_STATUS, glGetShaderiv, glGetShaderInfoLog)) {
-		glDeleteShader(shader);
-		return 0;
-	}
+	shader_check_error(shader, GL_COMPILE_STATUS, glGetShaderiv, glGetShaderInfoLog);
 	return shader;
 }
 
@@ -88,9 +89,6 @@ void bee__shader_init() {
 				) * vec3(pos, 1)).xy, 0, 1);
 			}
 	));
-	if (vertex == 0) {
-		exit(EXIT_FAILURE);
-	}
 
 	GLuint fragment = shader_compile(GL_FRAGMENT_SHADER, GLSL(
 			precision mediump float;
@@ -101,12 +99,9 @@ void bee__shader_init() {
 				gl_FragColor = texture2D(texture, texcoord);
 			}
 	));
-	if (fragment == 0) {
-		glDeleteShader(vertex);
-		exit(EXIT_FAILURE);
-	}
 
 	g_program = glCreateProgram();
+	atexit(shader_exit);
 	glAttachShader(g_program, vertex);
 	glAttachShader(g_program, fragment);
 	glBindAttribLocation(g_program, bee__shader_pos, "pos");
@@ -114,6 +109,7 @@ void bee__shader_init() {
 	glBindAttribLocation(g_program, bee__shader_mat1, "mat1");
 	glBindAttribLocation(g_program, bee__shader_sprite, "sprite");
 	glLinkProgram(g_program);
+	shader_check_error(g_program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog);
 
 	glDetachShader(g_program, vertex);
 	glDetachShader(g_program, fragment);
@@ -121,9 +117,4 @@ void bee__shader_init() {
 	glDeleteShader(fragment);
 	glUseProgram(g_program);
 	glReleaseShaderCompiler();
-
-	atexit(shader_exit);
-	if (shader_check_error(g_program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog)) {
-		exit(EXIT_FAILURE);
-	}
 }

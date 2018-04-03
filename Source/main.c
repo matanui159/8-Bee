@@ -21,8 +21,9 @@
 #include "transform.h"
 #include "window.h"
 #include "display.h"
-#include "shader.h"
+#include "glext/glext.h"
 #include "video.h"
+#include "shader.h"
 #include <signal.h>
 
 static bee_callback_t g_scene = bee_main;
@@ -55,8 +56,9 @@ int main(int argc, char* argv[]) {
 	bee__transform_init();
 	bee__window_init();
 	bee__display_init();
-	bee__shader_init();
+	bee__glext_init();
 	bee__video_init();
+	bee__shader_init();
 
 	for (;;) {
 		bee__window_update();

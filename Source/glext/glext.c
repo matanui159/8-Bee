@@ -1,5 +1,5 @@
 /*
- * error.c
+ * glext.c
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,26 +16,29 @@
  * limitations under the License.
  */
 
-#include "error.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
+#include "glext.h"
+#include <GLES2/gl2.h>
+#include <string.h>
 
-void bee__error(const char* format, ...) {
-	va_list args;
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	putc('\n', stderr);
-	fflush(stderr);
-	va_end(args);
+#include "debug.h"
 
-	va_start(args, format);
-	int length = vsnprintf(NULL, 0, format, args) + 1;
-	va_end(args);
+void bee__glext_init() {
+	bee__glext_debug_init();
+}
 
-	char message[length];
-	va_start(args, format);
-	vsnprintf(message, length, format, args);
-	va_end(args);
-	bee__error_native(message);
+_Bool bee__glext_check_extension(const char* name) {
+	int index = 0;
+	for (const char* ext = (char*)glGetString(GL_EXTENSIONS);; ++ext) {
+		if (*ext == ' ' || *ext == '\0') {
+			if (name[index] == '\0') {
+				return 1;
+			} else if (*ext == '\0') {
+				return 0;
+			}
+			index = 0;
+		} else if (*ext != name[index++]) {
+			index = 0;
+		}
+	}
+	return 0;
 }

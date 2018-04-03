@@ -1,5 +1,5 @@
 /*
- * error.c
+ * glext.h
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,26 +16,10 @@
  * limitations under the License.
  */
 
-#include "error.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
+#ifndef GLEXT_GLEXT_H_
+#define GLEXT_GLEXT_H_
 
-void bee__error(const char* format, ...) {
-	va_list args;
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	putc('\n', stderr);
-	fflush(stderr);
-	va_end(args);
+void bee__glext_init();
+_Bool bee__glext_check_extension(const char* name);
 
-	va_start(args, format);
-	int length = vsnprintf(NULL, 0, format, args) + 1;
-	va_end(args);
-
-	char message[length];
-	va_start(args, format);
-	vsnprintf(message, length, format, args);
-	va_end(args);
-	bee__error_native(message);
-}
+#endif

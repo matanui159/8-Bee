@@ -20,9 +20,11 @@
 #include <8bee.h>
 #include "error.h"
 #include "transform.h"
+#include "glext/debug.h"
 #include "shader.h"
 #include <GLES2/gl2.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <stddef.h>
 
 typedef struct elem_t {
@@ -39,30 +41,28 @@ static const GLuint g_buffer = 2;
 
 static elem_t g_buffer_data[1];
 
-static void gles_check_error() {
-	GLenum error = glGetError();
-	if (error != GL_NO_ERROR) {
-		switch (error) {
-		case GL_OUT_OF_MEMORY:
-			bee__error("GLES: Out of memory");
-			break;
-		case GL_INVALID_VALUE:
-			bee__error("GLES: Invalid value");
-			break;
-		case GL_INVALID_ENUM:
-			bee__error("GLES: Invalid enum");
-			break;
-		case GL_INVALID_OPERATION:
-			bee__error("GLES: Invalid operation");
-			break;
-		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			bee__error("GLES: Invalid framebuffer operation");
-			break;
-		default:
-			bee__error("GLES: %i (Unknown error)", error);
-			break;
-		}
-		exit(EXIT_FAILURE);
+static void GL_APIENTRY gles_error(GLenum source, GLenum type, GLuint id, GLenum severity,
+		GLsizei length, const GLchar* message, const void* data) {
+	const char* module = "???";
+	switch (source) {
+	case GL_DEBUG_SOURCE_API:
+		module = "GLES";
+		break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+	case GL_DEBUG_SOURCE_APPLICATION:
+		module = "GLSL";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		module = "EGL";
+		break;
+	}
+
+	if (severity == GL_DEBUG_SEVERITY_HIGH) {
+		bee__error("%s: %.*s", module, length, message);
+		exit(id);
+	} else {
+		fprintf(stderr, "%s: %.*s\n", module, length, message);
+		fflush(stderr);
 	}
 }
 
@@ -82,6 +82,9 @@ static void video_exit() {
 }
 
 void bee__video_init() {
+	atexit(video_exit);
+	glDebugMessageCallback(gles_error, NULL);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, g_framebuffer);
 	glBindTexture(GL_TEXTURE_2D, g_framebuffer);
 	texture_create(g_framebuffer);
@@ -110,9 +113,6 @@ void bee__video_init() {
 	glVertexAttribPointer(bee__shader_mat0, 3, GL_FLOAT, GL_FALSE, sizeof(elem_t), (void*)offsetof(elem_t, matrix.m00));
 	glVertexAttribPointer(bee__shader_mat1, 3, GL_FLOAT, GL_FALSE, sizeof(elem_t), (void*)offsetof(elem_t, matrix.m10));
 	glVertexAttribPointer(bee__shader_sprite, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(elem_t), (void*)offsetof(elem_t, sprite));
-
-	atexit(video_exit);
-	gles_check_error();
 }
 
 void bee__video_data(unsigned char* data) {
@@ -124,16 +124,12 @@ void bee__video_data(unsigned char* data) {
 		native[i] |= (data[i] & 0x03) * 0x0050;
 	}
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, native);
-	gles_check_error();
 }
 
 static void video_flush() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_buffer_data), g_buffer_data, GL_STREAM_DRAW);
-	gles_check_error();
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(g_buffer_data), g_buffer_data);
-	gles_check_error();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	gles_check_error();
 }
 
 void bee_draw(const bee_sprite_t* sprite) {
@@ -149,7 +145,6 @@ void bee_draw(const bee_sprite_t* sprite) {
 	elem->sprite.x1 = (sprite->x + sprite->w - 1) * 2;
 	elem->sprite.y1 = (sprite->y + sprite->h - 1) * 2;
 	video_flush();
-	gles_check_error();
 }
 
 void bee__video_update() {
@@ -166,5 +161,4 @@ void bee__video_update() {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, g_framebuffer);
 	glBindTexture(GL_TEXTURE_2D, g_texdata);
-	gles_check_error();
 }

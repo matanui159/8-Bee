@@ -20,6 +20,7 @@
 #include "error.h"
 #include "window.h"
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <stdlib.h>
 
 static EGLDisplay g_display;
@@ -51,7 +52,7 @@ static void egl_error() {
 	} else {
 		bee__error("EGL: %i (Unknown error)", error);
 	}
-	exit(EXIT_FAILURE);
+	exit(error);
 }
 
 static void display_exit() {
@@ -93,15 +94,25 @@ void bee__display_init() {
 	}
 
 	// context
-	static const EGLint context_attribs[] = {
+	static const EGLint context_debug_attribs[] = {
 			EGL_CONTEXT_CLIENT_VERSION, 2,
+			EGL_CONTEXT_FLAGS_KHR, EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR,
 			EGL_NONE
 	};
 
-	EGLContext context = eglCreateContext(g_display, config, NULL, context_attribs);
+	EGLContext context = eglCreateContext(g_display, config, NULL, context_debug_attribs);
 	if (context == EGL_NO_CONTEXT) {
-		egl_error();
+		static const EGLint context_attribs[] = {
+				EGL_CONTEXT_CLIENT_VERSION, 2,
+				EGL_NONE
+		};
+
+		context = eglCreateContext(g_display, config, NULL, context_attribs);
+		if (context == EGL_NO_CONTEXT) {
+			egl_error();
+		}
 	}
+
 	eglMakeCurrent(g_display, g_surface, g_surface, context);
 }
 

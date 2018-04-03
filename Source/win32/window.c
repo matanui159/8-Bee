@@ -33,7 +33,7 @@ static void win32_error() {
 		bee__error("WIN32: %s", message);
 		LocalFree(message);
 	}
-	exit(EXIT_FAILURE);
+	exit(error);
 }
 
 static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) {
