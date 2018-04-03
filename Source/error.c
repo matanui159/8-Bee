@@ -32,11 +32,9 @@ void bee__error(const char* format, ...) {
 	int length = vsnprintf(NULL, 0, format, args) + 1;
 	va_end(args);
 
-	char* message = malloc(length);
+	char message[length];
 	va_start(args, format);
 	vsnprintf(message, length, format, args);
 	va_end(args);
-
 	bee__error_native(message);
-	free(message);
 }

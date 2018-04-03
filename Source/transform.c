@@ -55,11 +55,11 @@ void bee_pop() {
 
 void bee_identity() {
 	bee__matrix_t* matrix = bee__transform_get();
-	matrix->m00 = 1;
+	matrix->m00 = 1 / 64.0;
 	matrix->m01 = 0;
 	matrix->m02 = 0;
 	matrix->m10 = 0;
-	matrix->m11 = 1;
+	matrix->m11 = 1 / 64.0;
 	matrix->m12 = 0;
 }
 

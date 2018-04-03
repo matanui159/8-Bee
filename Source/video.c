@@ -17,24 +17,27 @@
  */
 
 #include "video.h"
+#include <8bee.h>
 #include "error.h"
+#include "transform.h"
 #include "shader.h"
 #include <GLES2/gl2.h>
 #include <stdlib.h>
 #include <stddef.h>
 
-typedef struct bee__elem_t {
-	GLfloat m00, m01, m02;
-	GLfloat m10, m11, m12;
-	GLubyte x0, y0, x1, y1;
-} bee__elem_t;
+typedef struct elem_t {
+	bee__matrix_t matrix;
+	struct {
+		GLubyte x0, y0, x1, y1;
+	} sprite;
+} elem_t;
 
 static const GLuint g_framebuffer = 1;
 static const GLuint g_texdata = 2;
 static const GLuint g_quad = 1;
 static const GLuint g_buffer = 2;
 
-static bee__elem_t g_buffer_data[1];
+static elem_t g_buffer_data[1];
 
 static void gles_check_error() {
 	GLenum error = glGetError();
@@ -59,6 +62,7 @@ static void gles_check_error() {
 			bee__error("GLES: %i (Unknown error)", error);
 			break;
 		}
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -103,9 +107,9 @@ void bee__video_init() {
 	glEnableVertexAttribArray(bee__shader_mat0);
 	glEnableVertexAttribArray(bee__shader_mat1);
 	glEnableVertexAttribArray(bee__shader_sprite);
-	glVertexAttribPointer(bee__shader_mat0, 3, GL_FLOAT, GL_FALSE, sizeof(bee__elem_t), (void*)offsetof(bee__elem_t, m00));
-	glVertexAttribPointer(bee__shader_mat1, 3, GL_FLOAT, GL_FALSE, sizeof(bee__elem_t), (void*)offsetof(bee__elem_t, m10));
-	glVertexAttribPointer(bee__shader_sprite, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(bee__elem_t), (void*)offsetof(bee__elem_t, x0));
+	glVertexAttribPointer(bee__shader_mat0, 3, GL_FLOAT, GL_FALSE, sizeof(elem_t), (void*)offsetof(elem_t, matrix.m00));
+	glVertexAttribPointer(bee__shader_mat1, 3, GL_FLOAT, GL_FALSE, sizeof(elem_t), (void*)offsetof(elem_t, matrix.m10));
+	glVertexAttribPointer(bee__shader_sprite, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(elem_t), (void*)offsetof(elem_t, sprite));
 
 	atexit(video_exit);
 	gles_check_error();
@@ -120,6 +124,47 @@ void bee__video_data(unsigned char* data) {
 		native[i] |= (data[i] & 0x03) * 0x0050;
 	}
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, native);
+	gles_check_error();
 }
 
+static void video_flush() {
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_buffer_data), g_buffer_data, GL_STREAM_DRAW);
+	gles_check_error();
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(g_buffer_data), g_buffer_data);
+	gles_check_error();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	gles_check_error();
+}
 
+void bee_draw(const bee_sprite_t* sprite) {
+	elem_t* elem = g_buffer_data + 0;
+	elem->matrix = *bee__transform_get();
+	elem->matrix.m00 *= sprite->w;
+	elem->matrix.m01 *= sprite->h;
+	elem->matrix.m10 *= sprite->w;
+	elem->matrix.m11 *= sprite->h;
+
+	elem->sprite.x0 = sprite->x * 2;
+	elem->sprite.y0 = sprite->y * 2;
+	elem->sprite.x1 = (sprite->x + sprite->w - 1) * 2;
+	elem->sprite.y1 = (sprite->y + sprite->h - 1) * 2;
+	video_flush();
+	gles_check_error();
+}
+
+void bee__video_update() {
+//	video_flush();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, g_framebuffer);
+
+	static const bee_sprite_t sprite = {0, 0, 128, 128};
+	bee_push();
+	bee_identity();
+	bee_draw(&sprite);
+//	video_flush();
+	bee_pop();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, g_framebuffer);
+	glBindTexture(GL_TEXTURE_2D, g_texdata);
+	gles_check_error();
+}

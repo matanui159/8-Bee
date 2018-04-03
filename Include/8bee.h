@@ -30,7 +30,6 @@ typedef struct bee_sprite_t {
 	int y;
 	int w;
 	int h;
-	int mask;
 } bee_sprite_t;
 
 typedef struct bee_clip_t {
@@ -41,8 +40,8 @@ typedef struct bee_clip_t {
 void bee_main(void* data);
 void bee_scene(bee_callback_t scene, void* data);
 unsigned char bee_input();
-void bee_draw(bee_sprite_t* sprite);
-void bee_play(bee_clip_t* clip, bee_callback_t end);
+void bee_draw(const bee_sprite_t* sprite);
+void bee_play(const bee_clip_t* clip, bee_callback_t end);
 void bee_savedata(void* data, int length);
 
 void bee_push();
