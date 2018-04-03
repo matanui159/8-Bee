@@ -17,30 +17,39 @@
  */
 
 #include <8bee.h>
-#include "error.h"
+#include "log.h"
 #include "transform.h"
 #include "window.h"
 #include "display.h"
 #include "glext/glext.h"
 #include "video.h"
 #include "shader.h"
+#include <stdlib.h>
 #include <signal.h>
 
 static bee_callback_t g_scene = bee_main;
 static void* g_scene_data;
 
 static void signal_error(int signal) {
+	const char* message = NULL;
 	switch (signal) {
 	case SIGILL:
-		bee__error("SIG: Illegal operation");
+		message = "Illegal operation";
 		break;
 	case SIGSEGV:
-		bee__error("SIG: Segment fault");
+		message = "Segment violation";
 		break;
 	case SIGFPE:
-		bee__error("SIG: Floating point error");
+		message = "Floating point error";
 		break;
 	}
+
+	if (message == NULL) {
+		bee__log_fail("SIG: %i (Unknown signal)", signal);
+	} else {
+		bee__log_fail("SIG: %s", message);
+	}
+	exit(signal);
 }
 
 void bee_scene(bee_callback_t scene, void* data) {
@@ -53,6 +62,7 @@ int main(int argc, char* argv[]) {
 	signal(SIGSEGV, signal_error);
 	signal(SIGFPE, signal_error);
 
+	bee__log_init();
 	bee__transform_init();
 	bee__window_init();
 	bee__display_init();

@@ -17,7 +17,7 @@
  */
 
 #include "shader.h"
-#include "glext/debug.h"
+#include "log.h"
 #include <GLES2/gl2.h>
 #include <stdlib.h>
 
@@ -31,21 +31,20 @@ const GLuint bee__shader_sprite = 3;
 static GLuint g_program;
 
 static void shader_check_error(GLuint object, GLenum STATUS, PFNGLGETSHADERIVPROC Getiv, PFNGLGETSHADERINFOLOGPROC GetInfoLog) {
-	if (GL_debug) {
-		GLint length;
-		Getiv(object, GL_INFO_LOG_LENGTH, &length);
-		if (length > 1) {
-			GLint status;
-			Getiv(object, STATUS, &status);
-			GLenum severity = GL_DEBUG_SEVERITY_HIGH;
-			if (status) {
-				severity = GL_DEBUG_SEVERITY_LOW;
-			}
+	GLint length;
+	Getiv(object, GL_INFO_LOG_LENGTH, &length);
+	if (length > 0) {
+		char message[length];
+		GetInfoLog(object, length, NULL, message);
 
-			char message[length];
-			GetInfoLog(object, length, NULL, message);
-			glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_OTHER, EXIT_FAILURE, severity,
-					length - 1, message);
+		GLint status;
+		Getiv(object, STATUS, &status);
+		const char* format = "GLSL: %s";
+		if (status) {
+			bee__log_warn(format, message);
+		} else {
+			bee__log_fail(format, message);
+			exit(EXIT_FAILURE);
 		}
 	}
 }

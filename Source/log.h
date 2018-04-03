@@ -1,5 +1,5 @@
 /*
- * error.h
+ * log.h
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,16 +16,21 @@
  * limitations under the License.
  */
 
-#ifndef ERROR_H_
-#define ERROR_H_
+#ifndef LOG_H_
+#define LOG_H_
 
 #ifdef __GNUC__
-#	define BEE__ERROR_FORMAT __attribute__((format(printf, 1, 2)))
+#	define BEE__LOG_FORMAT __attribute__((format(printf, 1, 2)))
 #else
-#	define BEE__ERROR_FORMAT
+#	define BEE__LOG_FORMAT
 #endif
 
-void bee__error_native(const char* message);
-void bee__error(const char* format, ...) BEE__ERROR_FORMAT;
+void bee__log_init();
+
+void bee__log_info(const char* format, ...) BEE__LOG_FORMAT;
+void bee__log_warn(const char* format, ...) BEE__LOG_FORMAT;
+void bee__log_fail(const char* format, ...) BEE__LOG_FORMAT;
+
+void bee__log_fail_native(const char* message);
 
 #endif

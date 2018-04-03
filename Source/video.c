@@ -18,7 +18,7 @@
 
 #include "video.h"
 #include <8bee.h>
-#include "error.h"
+#include "log.h"
 #include "transform.h"
 #include "glext/debug.h"
 #include "shader.h"
@@ -49,7 +49,6 @@ static void GL_APIENTRY gles_error(GLenum source, GLenum type, GLuint id, GLenum
 		module = "GLES";
 		break;
 	case GL_DEBUG_SOURCE_SHADER_COMPILER:
-	case GL_DEBUG_SOURCE_APPLICATION:
 		module = "GLSL";
 		break;
 	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
@@ -57,12 +56,19 @@ static void GL_APIENTRY gles_error(GLenum source, GLenum type, GLuint id, GLenum
 		break;
 	}
 
-	if (severity == GL_DEBUG_SEVERITY_HIGH) {
-		bee__error("%s: %.*s", module, length, message);
+	static const char* format = "%s: %.*s";
+	switch (severity) {
+	case GL_DEBUG_SEVERITY_HIGH:
+		bee__log_fail(format, module, length, message);
 		exit(id);
-	} else {
-		fprintf(stderr, "%s: %.*s\n", module, length, message);
-		fflush(stderr);
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		bee__log_warn(format, module, length, message);
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		bee__log_info(format, module, length, message);
+		break;
 	}
 }
 
@@ -84,6 +90,8 @@ static void video_exit() {
 void bee__video_init() {
 	atexit(video_exit);
 	glDebugMessageCallback(gles_error, NULL);
+	bee__log_info("GLES: Vendor = %s", (char*)glGetString(GL_VENDOR));
+	bee__log_info("GLES: Renderer = %s", (char*)glGetString(GL_RENDERER));
 
 	glBindFramebuffer(GL_FRAMEBUFFER, g_framebuffer);
 	glBindTexture(GL_TEXTURE_2D, g_framebuffer);

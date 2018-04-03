@@ -17,7 +17,7 @@
  */
 
 #include "../window.h"
-#include "../error.h"
+#include "../log.h"
 #include <windows.h>
 #include <stdlib.h>
 
@@ -28,9 +28,9 @@ static void win32_error() {
 	char* message;
 	if (FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL, error, 0, (char*)&message, 0, NULL) == 0) {
-		bee__error("WIN32: %li (%li)", error, GetLastError());
+		bee__log_fail("WIN32: %li (%li)", error, GetLastError());
 	} else {
-		bee__error("WIN32: %s", message);
+		bee__log_fail("WIN32: %s", message);
 		LocalFree(message);
 	}
 	exit(error);
@@ -51,6 +51,7 @@ static void class_exit() {
 
 static void window_exit() {
 	DestroyWindow(g_window);
+	g_window = NULL;
 }
 
 void bee__window_init() {
