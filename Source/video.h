@@ -22,6 +22,6 @@
 void bee__video_init();
 void bee__video_update();
 
-void bee__video_data(void* data);
+void bee__video_data(unsigned char* data);
 
 #endif

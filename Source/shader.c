@@ -24,6 +24,11 @@
 
 #define GLSL(code) #code
 
+const GLuint bee__shader_pos = 0;
+const GLuint bee__shader_mat0 = 1;
+const GLuint bee__shader_mat1 = 2;
+const GLuint bee__shader_sprite = 3;
+
 static GLuint g_program;
 
 static _Bool shader_check_error(GLuint object, GLenum STATUS, PFNGLGETSHADERIVPROC Getiv, PFNGLGETSHADERINFOLOGPROC GetInfoLog) {
@@ -58,20 +63,29 @@ static void shader_exit() {
 
 void bee__shader_init() {
 	GLuint vertex = shader_compile(GL_VERTEX_SHADER, GLSL(
+			attribute vec2 pos;
 			attribute vec3 mat0;
 			attribute vec3 mat1;
-			attribute vec2 pos;
-			attribute vec2 f_texcoord;
+			attribute vec4 sprite;
 			varying vec2 texcoord;
 
 			void main() {
-				texcoord = f_texcoord;
-				vec3 tpos = mat3(
+				if (pos.x < 0.0) {
+					texcoord.x = sprite.x;
+				} else {
+					texcoord.x = sprite.z;
+				}
+				if (pos.y < 0.0) {
+					texcoord.y = sprite.y;
+				} else {
+					texcoord.y = sprite.w;
+				}
+
+				gl_Position = vec4((mat3(
 						mat0.x, mat1.x, 0,
 						mat0.y, mat1.y, 0,
 						mat0.z, mat1.z, 1
-				) * vec3(pos, 1);
-				gl_Position = vec4(tpos.xy, 0, tpos.z);
+				) * vec3(pos, 1)).xy, 0, 1);
 			}
 	));
 	if (vertex == 0) {
@@ -93,13 +107,12 @@ void bee__shader_init() {
 	}
 
 	g_program = glCreateProgram();
-	atexit(shader_exit);
 	glAttachShader(g_program, vertex);
 	glAttachShader(g_program, fragment);
-	glBindAttribLocation(g_program, 0, "mat0");
-	glBindAttribLocation(g_program, 1, "mat1");
-	glBindAttribLocation(g_program, 2, "pos");
-	glBindAttribLocation(g_program, 3, "t_texcoord");
+	glBindAttribLocation(g_program, bee__shader_pos, "pos");
+	glBindAttribLocation(g_program, bee__shader_mat0, "mat0");
+	glBindAttribLocation(g_program, bee__shader_mat1, "mat1");
+	glBindAttribLocation(g_program, bee__shader_sprite, "sprite");
 	glLinkProgram(g_program);
 
 	glDetachShader(g_program, vertex);
@@ -108,6 +121,8 @@ void bee__shader_init() {
 	glDeleteShader(fragment);
 	glUseProgram(g_program);
 	glReleaseShaderCompiler();
+
+	atexit(shader_exit);
 	if (shader_check_error(g_program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog)) {
 		exit(EXIT_FAILURE);
 	}

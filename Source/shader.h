@@ -18,6 +18,12 @@
 
 #ifndef SHADER_H_
 #define SHADER_H_
+#include <GLES2/gl2.h>
+
+extern const GLuint bee__shader_pos;
+extern const GLuint bee__shader_mat0;
+extern const GLuint bee__shader_mat1;
+extern const GLuint bee__shader_sprite;
 
 void bee__shader_init();
 

@@ -18,13 +18,23 @@
 
 #include "video.h"
 #include "error.h"
+#include "shader.h"
 #include <GLES2/gl2.h>
 #include <stdlib.h>
+#include <stddef.h>
+
+typedef struct bee__elem_t {
+	GLfloat m00, m01, m02;
+	GLfloat m10, m11, m12;
+	GLubyte x0, y0, x1, y1;
+} bee__elem_t;
 
 static const GLuint g_framebuffer = 1;
 static const GLuint g_texdata = 2;
 static const GLuint g_quad = 1;
 static const GLuint g_buffer = 2;
+
+static bee__elem_t g_buffer_data[1];
 
 static void gles_check_error() {
 	GLenum error = glGetError();
@@ -85,8 +95,31 @@ void bee__video_init() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, g_quad);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_data), quad_data, GL_STATIC_DRAW);
-//	glEnableVertexAttribArray();
+	glEnableVertexAttribArray(bee__shader_pos);
+	glVertexAttribPointer(bee__shader_pos, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, g_buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_buffer_data), NULL, GL_STREAM_DRAW);
+	glEnableVertexAttribArray(bee__shader_mat0);
+	glEnableVertexAttribArray(bee__shader_mat1);
+	glEnableVertexAttribArray(bee__shader_sprite);
+	glVertexAttribPointer(bee__shader_mat0, 3, GL_FLOAT, GL_FALSE, sizeof(bee__elem_t), (void*)offsetof(bee__elem_t, m00));
+	glVertexAttribPointer(bee__shader_mat1, 3, GL_FLOAT, GL_FALSE, sizeof(bee__elem_t), (void*)offsetof(bee__elem_t, m10));
+	glVertexAttribPointer(bee__shader_sprite, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(bee__elem_t), (void*)offsetof(bee__elem_t, x0));
 
 	atexit(video_exit);
 	gles_check_error();
 }
+
+void bee__video_data(unsigned char* data) {
+	GLushort native[128 * 128];
+	for (int i = 0; i < 128 * 128; ++i) {
+		native[i] = 0x000F;
+		native[i] |= (data[i] & 0x30) * 0x0500;
+		native[i] |= (data[i] & 0x0C) * 0x0140;
+		native[i] |= (data[i] & 0x03) * 0x0050;
+	}
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, native);
+}
+
+

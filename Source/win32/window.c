@@ -21,7 +21,6 @@
 #include <windows.h>
 #include <stdlib.h>
 
-static const WCHAR g_class_name[] = L"8bee";
 static HWND g_window;
 
 static void win32_error() {
@@ -47,7 +46,7 @@ static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) 
 }
 
 static void class_exit() {
-	UnregisterClassW(g_class_name, GetModuleHandleW(NULL));
+	UnregisterClassW(L"8bee", GetModuleHandleW(NULL));
 }
 
 static void window_exit() {
@@ -59,7 +58,7 @@ void bee__window_init() {
 
 	WNDCLASSW window_class = {CS_OWNDC};
 	window_class.hInstance = instance;
-	window_class.lpszClassName = g_class_name;
+	window_class.lpszClassName = L"8bee";
 	window_class.lpfnWndProc = window_proc;
 	window_class.hCursor = LoadCursorW(NULL, (PWSTR)IDC_ARROW);
 
@@ -73,7 +72,7 @@ void bee__window_init() {
 	AdjustWindowRect(&rect, style, FALSE);
 
 	g_window = CreateWindowW(
-			g_class_name,
+			L"8bee",
 			L"",
 			style,
 			CW_USEDEFAULT,
