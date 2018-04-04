@@ -19,6 +19,8 @@
 #include "debug.h"
 #include "../log.h"
 #include "glext.h"
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
 
 _Bool bee__GL_debug = 0;

@@ -113,15 +113,8 @@ void bee__video_init() {
 	glVertexAttribPointer(bee__shader_pos, 2, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
-void bee__video_data(unsigned char* data) {
-	GLushort native[128 * 128];
-	for (int i = 0; i < 128 * 128; ++i) {
-		native[i] = 0x000F;
-		native[i] |= (data[i] & 0x30) * 0x0500;
-		native[i] |= (data[i] & 0x0C) * 0x0140;
-		native[i] |= (data[i] & 0x03) * 0x0050;
-	}
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, native);
+void bee__video_data(GLushort* data) {
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, data);
 }
 
 static void video_flush() {
