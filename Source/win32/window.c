@@ -19,6 +19,7 @@
 #include "../window.h"
 #include "../log.h"
 #include <windows.h>
+#include <windowsx.h>
 #include <stdlib.h>
 
 static HWND g_window;
@@ -37,7 +38,23 @@ static void win32_error() {
 }
 
 static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) {
+	static _Bool show_cursor = 1;
 	switch (msg) {
+	case WM_MOUSEMOVE:
+		if (show_cursor) {
+			ShowCursor(FALSE);
+			show_cursor = 0;
+
+			TRACKMOUSEEVENT track = {sizeof(TRACKMOUSEEVENT)};
+			track.dwFlags = TME_LEAVE;
+			track.hwndTrack = wnd;
+			TrackMouseEvent(&track);
+		}
+		break;
+	case WM_MOUSELEAVE:
+		ShowCursor(TRUE);
+		show_cursor = 1;
+		break;
 	case WM_DESTROY:
 		PostQuitMessage(EXIT_SUCCESS);
 		break;
@@ -61,7 +78,6 @@ void bee__window_init() {
 	window_class.hInstance = instance;
 	window_class.lpszClassName = L"8bee";
 	window_class.lpfnWndProc = window_proc;
-	window_class.hCursor = LoadCursorW(NULL, (PWSTR)IDC_ARROW);
 
 	if (RegisterClassW(&window_class) == 0) {
 		win32_error();
