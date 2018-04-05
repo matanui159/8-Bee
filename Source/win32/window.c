@@ -84,16 +84,21 @@ void bee__window_init() {
 	}
 	atexit(class_exit);
 
-	RECT rect = {0, 0, 512, 512};
-	DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
+	static const int size = 512;
+	static const DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
+	RECT rect;
+	rect.left = GetSystemMetrics(SM_CXSCREEN) / 2 - size / 2;
+	rect.top = GetSystemMetrics(SM_CYSCREEN) / 2 - size / 2;
+	rect.right = rect.left + size;
+	rect.bottom = rect.top + size;
 	AdjustWindowRect(&rect, style, FALSE);
 
 	g_window = CreateWindowW(
 			L"8bee",
 			L"",
 			style,
-			CW_USEDEFAULT,
-			CW_USEDEFAULT,
+			rect.left,
+			rect.top,
 			rect.right - rect.left,
 			rect.bottom - rect.top,
 			NULL, NULL,
