@@ -84,7 +84,13 @@ local function stream_bee(stream)
 	local count = 0
 	local function flush(stream)
 		if count > 0 then
-			stream(prev)
+			if prev >= 64 then
+				stream(0x40)
+				stream((prev - 64) >> 8)
+				stream((prev - 64) & 0xFF)
+			else
+				stream(prev)
+			end
 			count = count - 1
 			if count > 0 then
 				while count > 128 do
@@ -109,7 +115,7 @@ local function stream_bee(stream)
 			stream(0x1A)
 			stream(stream_end)
 		else
-			local v = -1
+			local v = value + 64
 			if value & 0xF == 0 then
 				v = 0
 			else
@@ -121,12 +127,7 @@ local function stream_bee(stream)
 				end
 			end
 
-			if v == -1 then
-				flush(stream)
-				stream(0x40)
-				stream(value >> 8)
-				stream(value & 0xFF)
-			elseif v == prev then
+			if v == prev then
 				count = count + 1
 			else
 				flush(stream)
