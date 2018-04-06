@@ -32,8 +32,7 @@ void bee__glext_debug_init() {
 		bee__GL_debug = 1;
 		bee__glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
 		bee__glDebugMessageInsert = (PFNGLDEBUGMESSAGEINSERTKHRPROC)eglGetProcAddress("glDebugMessageInsertKHR");
-		bee__log_info("GLES: GL_debug = true");
 	} else {
-		bee__log_info("GLES: GL_debug = false");
+		bee__log_warn("GLES: GL_debug unsupported");
 	}
 }

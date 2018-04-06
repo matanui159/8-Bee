@@ -25,6 +25,7 @@
 #include "video.h"
 #include "shader.h"
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 
 static bee_callback_t g_scene = bee_main;
@@ -58,6 +59,15 @@ void bee_scene(bee_callback_t scene, void* data) {
 }
 
 int main(int argc, char* argv[]) {
+	_Bool editor = 0;
+	for (int i = 1; i < argc; ++i) {
+		if (strcmp(argv[i], "editor") == 0) {
+			editor = 1;
+		} else {
+			bee__log_warn("ARG: Unknown command '%s'", argv[i]);
+		}
+	}
+
 	signal(SIGILL, signal_error);
 	signal(SIGSEGV, signal_error);
 	signal(SIGFPE, signal_error);
@@ -70,8 +80,17 @@ int main(int argc, char* argv[]) {
 	bee__video_init();
 	bee__shader_init();
 
+	if (editor) {
+		bee__log_info("ARG: Starting editor");
+	} else {
+		// bee__res_init();
+	}
+
+	bee__window_post_init();
+
 	for (;;) {
 		bee__window_update();
+		bee__video_pre_update();
 		g_scene(g_scene_data);
 		bee__video_update();
 		bee__display_update();

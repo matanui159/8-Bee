@@ -85,7 +85,7 @@ void bee__window_init() {
 	atexit(class_exit);
 
 	static const int size = 512;
-	static const DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
+	static const DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	RECT rect;
 	rect.left = GetSystemMetrics(SM_CXSCREEN) / 2 - size / 2;
 	rect.top = GetSystemMetrics(SM_CYSCREEN) / 2 - size / 2;
@@ -110,6 +110,10 @@ void bee__window_init() {
 		win32_error();
 	}
 	atexit(window_exit);
+}
+
+void bee__window_post_init() {
+	ShowWindow(g_window, SW_SHOW);
 }
 
 void bee__window_update() {

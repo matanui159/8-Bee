@@ -88,9 +88,11 @@ static void video_exit() {
 
 void bee__video_init() {
 	atexit(video_exit);
-	glDebugMessageCallback(gles_error, NULL);
-	bee__log_info("GLES: Vendor = %s", (char*)glGetString(GL_VENDOR));
-	bee__log_info("GLES: Renderer = %s", (char*)glGetString(GL_RENDERER));
+	if (GL_debug) {
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(gles_error, NULL);
+	}
+	bee__log_info("GLES: %s", (char*)glGetString(GL_RENDERER));
 
 	glBindFramebuffer(GL_FRAMEBUFFER, g_framebuffer);
 	glBindTexture(GL_TEXTURE_2D, g_framebuffer);
@@ -143,6 +145,10 @@ void bee_draw(const bee_sprite_t* sprite) {
 	elem->sprite.x1 = (sprite->x + sprite->w - 1) * 2;
 	elem->sprite.y1 = (sprite->y + sprite->h - 1) * 2;
 	video_flush();
+}
+
+void bee__video_pre_update() {
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void bee__video_update() {

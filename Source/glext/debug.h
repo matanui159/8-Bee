@@ -23,9 +23,9 @@
 
 extern _Bool bee__GL_debug;
 extern PFNGLDEBUGMESSAGECALLBACKKHRPROC bee__glDebugMessageCallback;
-extern PFNGLDEBUGMESSAGEINSERTKHRPROC bee__glDebugMessageInsert;
 
 #define GL_debug bee__GL_debug
+#define GL_DEBUG_OUTPUT GL_DEBUG_OUTPUT_KHR
 #define GL_DEBUG_SOURCE_API GL_DEBUG_SOURCE_API_KHR
 #define GL_DEBUG_SOURCE_SHADER_COMPILER GL_DEBUG_SOURCE_SHADER_COMPILER_KHR
 #define GL_DEBUG_SOURCE_WINDOW_SYSTEM GL_DEBUG_SOURCE_WINDOW_SYSTEM_KHR
@@ -34,7 +34,6 @@ extern PFNGLDEBUGMESSAGEINSERTKHRPROC bee__glDebugMessageInsert;
 #define GL_DEBUG_SEVERITY_LOW GL_DEBUG_SEVERITY_LOW_KHR
 #define GL_DEBUG_SEVERITY_NOTIFICATION GL_DEBUG_SEVERITY_NOTIFICATION_KHR
 #define glDebugMessageCallback bee__glDebugMessageCallback
-#define glDebugMessageInsert bee__glDebugMessageInsert
 
 void bee__glext_debug_init();
 
