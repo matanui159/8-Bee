@@ -19,7 +19,6 @@
 #include "../window.h"
 #include "../log.h"
 #include <windows.h>
-#include <windowsx.h>
 #include <stdlib.h>
 
 static HWND g_window;

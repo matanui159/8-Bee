@@ -140,11 +140,18 @@ end
 
 local function dds2c(dds, c, name)
 	local input = stream_dds(stream_in(dds))
-	local output = stream_bee(stream_c(stream_out(c), name))
-	for i = 1, 128 * 128 do
-		output(input())
+	local image = {}
+	for y = 128, 1, -1 do
+		for x = 1, 128 do
+			image[(y - 1) * 128 + x] = input()
+		end
 	end
 	input(stream_end)
+
+	local output = stream_bee(stream_c(stream_out(c), name))
+	for i = 1, 128 * 128 do
+		output(image[i])
+	end
 	output(stream_end)
 end
 
