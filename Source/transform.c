@@ -44,7 +44,7 @@ bee__matrix_t* bee__transform_get() {
 
 void bee_push() {
 	if (++g_stack.index == g_stack.size) {
-		g_stack.matrices = malloc(sizeof(bee__matrix_t) * (g_stack.size *= 2));
+		g_stack.matrices = realloc(g_stack.matrices, sizeof(bee__matrix_t) * (g_stack.size *= 2));
 	}
 	g_stack.matrices[g_stack.index] = g_stack.matrices[g_stack.index - 1];
 }
