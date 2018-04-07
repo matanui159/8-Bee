@@ -1,5 +1,5 @@
 /*
- * res.h
+ * editor.c
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,22 +16,15 @@
  * limitations under the License.
  */
 
-#ifndef EDITOR_RES_H_
-#define EDITOR_RES_H_
+#include "editor.h"
 #include <8bee.h>
+#include "res.h"
 
-extern const bee_sprite_t bee__editor_cursor;
-extern const bee_sprite_t bee__editor_selector;
-extern const bee_sprite_t bee__editor_corner;
-extern const bee_sprite_t bee__editor_title_tab;
-extern const bee_sprite_t bee__editor_title_font;
-extern const bee_sprite_t bee__editor_video_tab;
-extern const bee_sprite_t bee__editor_video_colors;
-extern const bee_sprite_t bee__editor_music_tab;
-extern const bee_sprite_t bee__editor_music_notes;
-extern const bee_sprite_t bee__editor_music_font;
-extern const bee_sprite_t bee__editor_music_corner;
+static void editor_main() {
 
-void bee__editor_res_init();
+}
 
-#endif
+void bee__editor_init() {
+	bee__editor_res_init();
+	bee_scene(editor_main, NULL);
+}
