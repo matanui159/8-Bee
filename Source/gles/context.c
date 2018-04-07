@@ -18,9 +18,6 @@
 
 #include "context.h"
 #include "../log.h"
-#include "../window.h"
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
 #include <stdlib.h>
 
 static EGLDisplay g_display;
@@ -60,7 +57,7 @@ static void context_exit() {
 	eglTerminate(g_display);
 }
 
-void bee__context_init() {
+void bee__context_init(EGLNativeWindowType window) {
 	// display
 	g_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (!eglInitialize(g_display, NULL, NULL)) {
@@ -88,7 +85,7 @@ void bee__context_init() {
 	}
 
 	// surface
-	g_surface = eglCreateWindowSurface(g_display, config, bee__window_get(), NULL);
+	g_surface = eglCreateWindowSurface(g_display, config, window, NULL);
 	if (g_surface == EGL_NO_SURFACE) {
 		egl_error();
 	}

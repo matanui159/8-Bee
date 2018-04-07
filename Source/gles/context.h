@@ -18,8 +18,10 @@
 
 #ifndef GLES_CONTEXT_H_
 #define GLES_CONTEXT_H_
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
-void bee__context_init();
+void bee__context_init(EGLNativeWindowType window);
 void bee__context_update();
 
 #endif

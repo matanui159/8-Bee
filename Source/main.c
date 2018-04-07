@@ -84,7 +84,6 @@ int main(int argc, char* argv[]) {
 
 	for (;;) {
 		bee__window_update();
-		bee__video_pre_update();
 		g_scene(g_scene_data);
 		bee__video_update();
 	}

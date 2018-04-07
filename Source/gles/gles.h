@@ -23,10 +23,7 @@
 #include "glext/debug.h"
 
 void bee__gles_init();
-void bee__gles_check_error();
 _Bool bee__gles_check_extension(const char* name);
-
-void bee__gles_texture(GLuint texture, const GLushort* data);
 GLuint bee__gles_shader(const char* vert, const char* frag);
 
 #endif

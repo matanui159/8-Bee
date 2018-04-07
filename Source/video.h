@@ -18,11 +18,21 @@
 
 #ifndef VIDEO_H_
 #define VIDEO_H_
+#include <8bee.h>
+#include "transform.h"
+
+void bee__video_init_native(void* window);
+void bee__video_update_native();
+void bee__video_clear();
+
+void* bee__video_texture_create(int width, int height, unsigned short* data);
+void bee__video_texture_destroy(void* texture);
+void bee__video_texture_update(void* texture, const bee_sprite_t* sprite, unsigned short* data);
+void bee__video_texture_target(void* texture);
+void bee__video_texture_draw(void* texture, const bee_sprite_t* sprite, const bee__matrix_t* matrix);
 
 void bee__video_init();
-void bee__video_pre_update();
 void bee__video_update();
-
 void bee__video_data(unsigned short* data);
 
 #endif

@@ -73,9 +73,5 @@ void bee__log_fail(const char* format, ...) {
 	va_start(list, format);
 	const char* message = log_va("!", format, list);
 	va_end(list);
-	static _Bool fail = 0;
-	if (!fail) {
-		bee__log_fail_native(message);
-		fail = 1;
-	}
+	bee__log_fail_native(message);
 }
