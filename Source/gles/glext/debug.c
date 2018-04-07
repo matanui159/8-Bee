@@ -1,5 +1,5 @@
 /*
- * display.h
+ * debug.c
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,10 +16,20 @@
  * limitations under the License.
  */
 
-#ifndef DISPLAY_H_
-#define DISPLAY_H_
+#include "debug.h"
+#include "../../log.h"
+#include <EGL/egl.h>
 
-void bee__display_init();
-void bee__display_update();
+_Bool bee__GL_debug = 0;
+PFNGLDEBUGMESSAGECALLBACKKHRPROC bee__glDebugMessageCallback;
+PFNGLDEBUGMESSAGEINSERTKHRPROC bee__glDebugMessageInsert;
 
-#endif
+void bee__glext_debug_init() {
+	if (bee__gles_check_extension("GL_KHR_debug")) {
+		bee__GL_debug = 1;
+		bee__glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
+		bee__glDebugMessageInsert = (PFNGLDEBUGMESSAGEINSERTKHRPROC)eglGetProcAddress("glDebugMessageInsertKHR");
+	} else {
+		bee__log_warn("GLES: GL_debug unsupported");
+	}
+}

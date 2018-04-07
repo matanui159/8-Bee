@@ -18,12 +18,11 @@
 
 #ifndef VIDEO_H_
 #define VIDEO_H_
-#include <GLES2/gl2.h>
 
 void bee__video_init();
 void bee__video_pre_update();
 void bee__video_update();
 
-void bee__video_data(GLushort* data);
+void bee__video_data(unsigned short* data);
 
 #endif

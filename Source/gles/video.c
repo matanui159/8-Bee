@@ -16,16 +16,17 @@
  * limitations under the License.
  */
 
-#include "video.h"
+#include "../video.h"
 #include <8bee.h>
-#include "log.h"
-#include "transform.h"
-#include "glext/debug.h"
-#include "shader.h"
-#include <GLES2/gl2.h>
+#include "../log.h"
+#include "context.h"
+#include "gles.h"
+#include "../transform.h"
 #include <stdlib.h>
-#include <stdio.h>
 #include <stddef.h>
+
+#include "res/shader_main_vert.h"
+#include "res/shader_main_frag.h"
 
 typedef struct elem_t {
 	bee__matrix_t matrix;
@@ -34,6 +35,7 @@ typedef struct elem_t {
 	} sprite;
 } elem_t;
 
+static GLuint g_shader;
 static const GLuint g_framebuffer = 1;
 static const GLuint g_texdata = 2;
 static const GLuint g_quad = 1;
@@ -59,7 +61,6 @@ static void GL_APIENTRY gles_error(GLenum source, GLenum type, GLuint id, GLenum
 	switch (severity) {
 	case GL_DEBUG_SEVERITY_HIGH:
 		bee__log_fail(format, module, length, message);
-		exit(id);
 		break;
 	case GL_DEBUG_SEVERITY_MEDIUM:
 		bee__log_warn(format, module, length, message);
@@ -71,22 +72,17 @@ static void GL_APIENTRY gles_error(GLenum source, GLenum type, GLuint id, GLenum
 	}
 }
 
-static void texture_create(GLuint name) {
-	glBindTexture(GL_TEXTURE_2D, g_framebuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 128, 128, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-}
-
 static void video_exit() {
+	glDeleteProgram(g_shader);
 	glDeleteFramebuffers(1, &g_framebuffer);
 	glDeleteTextures(1, &g_framebuffer);
 	glDeleteTextures(1, &g_texdata);
 	glDeleteBuffers(1, &g_quad);
-//	glDeleteBuffers(1, &g_buffer);
 }
 
 void bee__video_init() {
+	bee__context_init();
+	bee__gles_init();
 	atexit(video_exit);
 	if (GL_debug) {
 		glEnable(GL_DEBUG_OUTPUT);
@@ -94,11 +90,12 @@ void bee__video_init() {
 	}
 	bee__log_info("GLES: %s", (char*)glGetString(GL_RENDERER));
 
+	g_shader = bee__gles_shader(bee__res_shader_main_vert, bee__res_shader_main_frag);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, g_framebuffer);
-	glBindTexture(GL_TEXTURE_2D, g_framebuffer);
-	texture_create(g_framebuffer);
+	bee__gles_texture(g_framebuffer, NULL);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_framebuffer, 0);
-	texture_create(g_texdata);
+	bee__gles_texture(g_texdata, NULL);
 
 	static const GLfloat quad_data[] = {
 			-0.5, -0.5,
@@ -111,19 +108,22 @@ void bee__video_init() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, g_quad);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_data), quad_data, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(bee__shader_pos);
-	glVertexAttribPointer(bee__shader_pos, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	GLint pos = glGetAttribLocation(g_shader, "pos");
+	glEnableVertexAttribArray(pos);
+	glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	bee__gles_check_error();
 }
 
 void bee__video_data(GLushort* data) {
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, data);
+	bee__gles_texture(g_texdata, NULL);
 }
 
 static void video_flush() {
 	elem_t* elem = g_buffer_data;
-	glVertexAttrib3fv(bee__shader_mat0, &elem->matrix.m00);
-	glVertexAttrib3fv(bee__shader_mat1, &elem->matrix.m10);
-	glVertexAttrib4f(bee__shader_sprite,
+	glVertexAttrib3fv(glGetAttribLocation(g_shader, "mat0"), &elem->matrix.m00);
+	glVertexAttrib3fv(glGetAttribLocation(g_shader, "mat0"), &elem->matrix.m10);
+	glVertexAttrib4f(glGetAttribLocation(g_shader, "sprite"),
 			elem->sprite.x0 / 255.0,
 			elem->sprite.y0 / 255.0,
 			elem->sprite.x1 / 255.0,
@@ -165,4 +165,5 @@ void bee__video_update() {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, g_framebuffer);
 	glBindTexture(GL_TEXTURE_2D, g_texdata);
+	bee__context_update();
 }

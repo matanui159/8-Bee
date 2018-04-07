@@ -18,8 +18,7 @@
 
 #ifndef GLEXT_DEBUG_H_
 #define GLEXT_DEBUG_H_
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#include "../gles.h"
 
 extern _Bool bee__GL_debug;
 extern PFNGLDEBUGMESSAGECALLBACKKHRPROC bee__glDebugMessageCallback;

@@ -1,5 +1,5 @@
 /*
- * glext.c
+ * display.h
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,29 +16,10 @@
  * limitations under the License.
  */
 
-#include "glext.h"
-#include <GLES2/gl2.h>
-#include <string.h>
+#ifndef GLES_CONTEXT_H_
+#define GLES_CONTEXT_H_
 
-#include "debug.h"
+void bee__context_init();
+void bee__context_update();
 
-void bee__glext_init() {
-	bee__glext_debug_init();
-}
-
-_Bool bee__glext_check_extension(const char* name) {
-	int index = 0;
-	for (const char* ext = (char*)glGetString(GL_EXTENSIONS);; ++ext) {
-		if (*ext == ' ' || *ext == '\0') {
-			if (name[index] == '\0') {
-				return 1;
-			} else if (*ext == '\0') {
-				return 0;
-			}
-			index = 0;
-		} else if (*ext != name[index++]) {
-			index = 0;
-		}
-	}
-	return 0;
-}
+#endif

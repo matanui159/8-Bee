@@ -20,10 +20,7 @@
 #include "log.h"
 #include "transform.h"
 #include "window.h"
-#include "display.h"
-#include "glext/glext.h"
 #include "video.h"
-#include "shader.h"
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
@@ -75,10 +72,7 @@ int main(int argc, char* argv[]) {
 	bee__log_init();
 	bee__transform_init();
 	bee__window_init();
-	bee__display_init();
-	bee__glext_init();
 	bee__video_init();
-	bee__shader_init();
 
 	if (editor) {
 		bee__log_info("ARG: Starting editor");
@@ -93,6 +87,5 @@ int main(int argc, char* argv[]) {
 		bee__video_pre_update();
 		g_scene(g_scene_data);
 		bee__video_update();
-		bee__display_update();
 	}
 }

@@ -125,6 +125,6 @@ void bee__window_update() {
 	}
 }
 
-EGLNativeWindowType bee__window_get() {
+void* bee__window_get() {
 	return g_window;
 }

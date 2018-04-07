@@ -18,12 +18,11 @@
 
 #ifndef WINDOW_H_
 #define WINDOW_H_
-#include <EGL/egl.h>
 
 void bee__window_init();
 void bee__window_post_init();
 void bee__window_update();
 
-EGLNativeWindowType bee__window_get();
+void* bee__window_get();
 
 #endif

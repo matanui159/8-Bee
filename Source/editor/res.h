@@ -1,5 +1,5 @@
 /*
- * shader.h
+ * res.h
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,15 +16,20 @@
  * limitations under the License.
  */
 
-#ifndef SHADER_H_
-#define SHADER_H_
-#include <GLES2/gl2.h>
+#ifndef EDITOR_RES_H_
+#define EDITOR_RES_H_
+#include <8bee.h>
 
-extern const GLuint bee__shader_pos;
-extern const GLuint bee__shader_mat0;
-extern const GLuint bee__shader_mat1;
-extern const GLuint bee__shader_sprite;
-
-void bee__shader_init();
+extern const bee_sprite_t bee__editor_cursor;
+extern const bee_sprite_t bee__editor_selector;
+extern const bee_sprite_t bee__editor_corner;
+extern const bee_sprite_t bee__editor_title_tab;
+extern const bee_sprite_t bee__editor_title_font;
+extern const bee_sprite_t bee__editor_video_tab;
+extern const bee_sprite_t bee__editor_video_colors;
+extern const bee_sprite_t bee__editor_music_tab;
+extern const bee_sprite_t bee__editor_music_notes;
+extern const bee_sprite_t bee__editor_music_font;
+extern const bee_sprite_t bee__editor_music_corner;
 
 #endif

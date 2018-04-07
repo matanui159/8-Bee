@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-#include "display.h"
-#include "log.h"
-#include "window.h"
+#include "context.h"
+#include "../log.h"
+#include "../window.h"
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <stdlib.h>
@@ -55,18 +55,18 @@ static void egl_error() {
 	exit(error);
 }
 
-static void display_exit() {
+static void context_exit() {
 	eglReleaseThread();
 	eglTerminate(g_display);
 }
 
-void bee__display_init() {
+void bee__context_init() {
 	// display
 	g_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (!eglInitialize(g_display, NULL, NULL)) {
 		egl_error();
 	}
-	atexit(display_exit);
+	atexit(context_exit);
 
 	// config
 	static const EGLint config_attribs[] = {
@@ -116,6 +116,6 @@ void bee__display_init() {
 	eglMakeCurrent(g_display, g_surface, g_surface, context);
 }
 
-void bee__display_update() {
+void bee__context_update() {
 	eglSwapBuffers(g_display, g_surface);
 }

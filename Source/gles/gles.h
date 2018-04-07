@@ -1,5 +1,5 @@
 /*
- * debug.c
+ * util.h
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,23 +16,17 @@
  * limitations under the License.
  */
 
-#include "debug.h"
-#include "../log.h"
-#include "glext.h"
+#ifndef GLES_GLES_H_
+#define GLES_GLES_H_
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include <EGL/egl.h>
+#include "glext/debug.h"
 
-_Bool bee__GL_debug = 0;
-PFNGLDEBUGMESSAGECALLBACKKHRPROC bee__glDebugMessageCallback;
-PFNGLDEBUGMESSAGEINSERTKHRPROC bee__glDebugMessageInsert;
+void bee__gles_init();
+void bee__gles_check_error();
+_Bool bee__gles_check_extension(const char* name);
 
-void bee__glext_debug_init() {
-	if (bee__glext_check_extension("GL_KHR_debug")) {
-		bee__GL_debug = 1;
-		bee__glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
-		bee__glDebugMessageInsert = (PFNGLDEBUGMESSAGEINSERTKHRPROC)eglGetProcAddress("glDebugMessageInsertKHR");
-	} else {
-		bee__log_warn("GLES: GL_debug unsupported");
-	}
-}
+void bee__gles_texture(GLuint texture, const GLushort* data);
+GLuint bee__gles_shader(const char* vert, const char* frag);
+
+#endif
