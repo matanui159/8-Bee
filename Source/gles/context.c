@@ -17,8 +17,7 @@
  */
 
 #include "context.h"
-#include "../log.h"
-#include <stdlib.h>
+#include <mint.h>
 
 static EGLDisplay g_display;
 static EGLSurface g_surface;
@@ -45,16 +44,24 @@ static void egl_error() {
 
 	EGLint error = eglGetError();
 	if (error >= first_error && error <= last_error) {
-		bee__log_fail("EGL: %s", error_messages[error - first_error]);
+		mint_fail("EGL: %s", error_messages[error - first_error]);
 	} else {
-		bee__log_fail("EGL: %i (Unknown error)", error);
+		mint_fail("EGL: %i (Unknown error)", error);
 	}
-	exit(error);
 }
 
-static void context_exit() {
+static void display_destroy(void* data) {
+	eglTerminate((EGLDisplay)data);
+}
+
+static void surface_destroy(void* data) {
 	eglReleaseThread();
-	eglTerminate(g_display);
+	eglDestroySurface(g_display, (EGLSurface)data);
+}
+
+static void context_destroy(void* data) {
+	eglReleaseThread();
+	eglDestroyContext(g_display, (EGLContext)data);
 }
 
 void bee__context_init(EGLNativeWindowType window) {
@@ -63,7 +70,7 @@ void bee__context_init(EGLNativeWindowType window) {
 	if (!eglInitialize(g_display, NULL, NULL)) {
 		egl_error();
 	}
-	atexit(context_exit);
+	mint_create(g_display, display_destroy);
 
 	// config
 	static const EGLint config_attribs[] = {
@@ -80,8 +87,7 @@ void bee__context_init(EGLNativeWindowType window) {
 		egl_error();
 	}
 	if (count < 1) {
-		bee__log_fail("EGL: No supported config");
-		exit(EXIT_FAILURE);
+		mint_fail("EGL: No supported config");
 	}
 
 	// surface
@@ -89,6 +95,7 @@ void bee__context_init(EGLNativeWindowType window) {
 	if (g_surface == EGL_NO_SURFACE) {
 		egl_error();
 	}
+	mint_create(g_surface, surface_destroy);
 
 	// context
 	static const EGLint context_debug_attribs[] = {
@@ -108,8 +115,9 @@ void bee__context_init(EGLNativeWindowType window) {
 		if (context == EGL_NO_CONTEXT) {
 			egl_error();
 		}
+		mint_info("EGL: EGL_create_context unsupported");
 	}
-
+	mint_create(context, context_destroy);
 	eglMakeCurrent(g_display, g_surface, g_surface, context);
 }
 

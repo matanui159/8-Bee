@@ -18,39 +18,29 @@
 
 #include "transform.h"
 #include <8bee.h>
+#include <mint.h>
 #include <stdlib.h>
 #include <math.h>
 
-static struct {
-	bee__matrix_t* matrices;
-	int index;
-	int size;
-} g_stack;
-
-static void transform_exit() {
-	free(g_stack.matrices);
-}
+static bee__matrix_t* g_stack;
+static int g_stack_index = 0;
 
 void bee__transform_init() {
-	g_stack.matrices = malloc(sizeof(bee__matrix_t));
-	atexit(transform_exit);
+	mint_array_check(g_stack, 1);
 	bee_identity();
-	g_stack.size = 1;
 }
 
 bee__matrix_t* bee__transform_get() {
-	return g_stack.matrices + g_stack.index;
+	return g_stack + g_stack_index;
 }
 
 void bee_push() {
-	if (++g_stack.index == g_stack.size) {
-		g_stack.matrices = realloc(g_stack.matrices, sizeof(bee__matrix_t) * (g_stack.size *= 2));
-	}
-	g_stack.matrices[g_stack.index] = g_stack.matrices[g_stack.index - 1];
+	mint_array_check(g_stack, ++g_stack_index + 1);
+	g_stack[g_stack_index] = g_stack[g_stack_index - 1];
 }
 
 void bee_pop() {
-	--g_stack.index;
+	--g_stack_index;
 }
 
 void bee_identity() {

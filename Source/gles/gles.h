@@ -22,8 +22,11 @@
 #include <GLES2/gl2ext.h>
 #include "glext/debug.h"
 
+typedef void (*bee__gles_callback_t)(GLuint data);
+
 void bee__gles_init();
 _Bool bee__gles_check_extension(const char* name);
+GLuint* bee__gles_create(GLuint data, bee__gles_callback_t destroy);
 GLuint bee__gles_shader(const char* vert, const char* frag);
 
 #endif

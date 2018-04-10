@@ -18,23 +18,21 @@
 
 #include "video.h"
 #include "window.h"
-#include <stdlib.h>
+#include <stddef.h>
 
 static const bee_sprite_t g_all = {0, 0, 128, 128};
 static void* g_buffer;
 static void* g_texdata;
 
-static void video_exit() {
-	bee__video_texture_destroy(g_buffer);
-	bee__video_texture_destroy(g_texdata);
-}
-
 void bee__video_init() {
 	bee__video_init_native(bee__window_get());
-	atexit(video_exit);
 	g_buffer = bee__video_texture_create(128, 128, NULL);
 	g_texdata = bee__video_texture_create(128, 128, NULL);
 	bee__video_texture_target(g_buffer);
+}
+
+void bee__video_data(unsigned short* data) {
+	bee__video_texture_update(g_texdata, &g_all, data);
 }
 
 void bee__video_update() {
@@ -50,6 +48,6 @@ void bee__video_update() {
 	bee__video_update_native();
 }
 
-void bee__video_data(unsigned short* data) {
-	bee__video_texture_update(g_texdata, &g_all, data);
+void bee_draw(const bee_sprite_t* sprite) {
+	bee__video_texture_draw(g_texdata, sprite, bee__transform_get());
 }

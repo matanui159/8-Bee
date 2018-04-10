@@ -20,9 +20,9 @@
 #define WINDOW_H_
 
 void bee__window_init();
-void bee__window_post_init();
 void bee__window_update();
-
 void* bee__window_get();
+
+void bee__window_show();
 
 #endif

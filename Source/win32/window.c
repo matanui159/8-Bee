@@ -17,23 +17,37 @@
  */
 
 #include "../window.h"
-#include "../log.h"
+#include <mint.h>
 #include <windows.h>
 #include <stdlib.h>
 
+#define MAKEINTATOM_W(atom) (WCHAR*)MAKEINTATOM(atom)
+
 static HWND g_window;
+
+static void message_destroy(void* data) {
+	LocalFree((HLOCAL)data);
+}
 
 static void win32_error() {
 	DWORD error = GetLastError();
 	char* message;
 	if (FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL, error, 0, (char*)&message, 0, NULL) == 0) {
-		bee__log_fail("WIN32: %li (%li)", error, GetLastError());
+		mint_fail("WIN32: %li (%li)", error, GetLastError());
 	} else {
-		bee__log_fail("WIN32: %s", message);
-		LocalFree(message);
+		mint_create(message, message_destroy);
+		mint_fail("WIN32: %s", message);
 	}
-	exit(error);
+}
+
+static void class_destroy(void* data) {
+	UnregisterClassW(MAKEINTATOM_W(*(ATOM*)data), GetModuleHandleW(NULL));
+	free(data);
+}
+
+static void window_destroy(void* data) {
+	DestroyWindow((HWND)data);
 }
 
 static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) {
@@ -61,15 +75,6 @@ static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) 
 	return DefWindowProcW(wnd, msg, wpm, lpm);
 }
 
-static void class_exit() {
-	UnregisterClassW(L"8bee", GetModuleHandleW(NULL));
-}
-
-static void window_exit() {
-	DestroyWindow(g_window);
-	g_window = NULL;
-}
-
 void bee__window_init() {
 	HINSTANCE instance = GetModuleHandleW(NULL);
 
@@ -77,11 +82,14 @@ void bee__window_init() {
 	window_class.hInstance = instance;
 	window_class.lpszClassName = L"8bee";
 	window_class.lpfnWndProc = window_proc;
-
-	if (RegisterClassW(&window_class) == 0) {
+	ATOM atom = RegisterClassW(&window_class);
+	if (atom == 0) {
 		win32_error();
 	}
-	atexit(class_exit);
+
+	ATOM* patom = malloc(sizeof(ATOM));
+	*patom = atom;
+	mint_create(patom, class_destroy);
 
 	static const int size = 512;
 	static const DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
@@ -93,7 +101,7 @@ void bee__window_init() {
 	AdjustWindowRect(&rect, style, FALSE);
 
 	g_window = CreateWindowW(
-			L"8bee",
+			MAKEINTATOM_W(atom),
 			L"",
 			style,
 			rect.left,
@@ -108,11 +116,7 @@ void bee__window_init() {
 	if (g_window == NULL) {
 		win32_error();
 	}
-	atexit(window_exit);
-}
-
-void bee__window_post_init() {
-	ShowWindow(g_window, SW_SHOW);
+	mint_create(g_window, window_destroy);
 }
 
 void bee__window_update() {
@@ -120,6 +124,7 @@ void bee__window_update() {
 	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 		DispatchMessageW(&msg);
 		if (msg.message == WM_QUIT) {
+			ShowWindow(g_window, SW_HIDE);
 			exit(msg.wParam);
 		}
 	}
@@ -127,4 +132,8 @@ void bee__window_update() {
 
 void* bee__window_get() {
 	return g_window;
+}
+
+void bee__window_show() {
+	ShowWindow(g_window, SW_SHOW);
 }

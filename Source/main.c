@@ -16,39 +16,14 @@
  * limitations under the License.
  */
 
-#include <8bee.h>
-#include "log.h"
 #include "transform.h"
 #include "window.h"
 #include "video.h"
-#include <stdlib.h>
+#include <mint.h>
 #include <string.h>
-#include <signal.h>
 
 static bee_callback_t g_scene = bee_main;
 static void* g_scene_data;
-
-static void signal_error(int signal) {
-	const char* message = NULL;
-	switch (signal) {
-	case SIGILL:
-		message = "Illegal operation";
-		break;
-	case SIGSEGV:
-		message = "Segment violation";
-		break;
-	case SIGFPE:
-		message = "Floating point error";
-		break;
-	}
-
-	if (message == NULL) {
-		bee__log_fail("SIG: %i (Unknown signal)", signal);
-	} else {
-		bee__log_fail("SIG: %s", message);
-	}
-	exit(signal);
-}
 
 void bee_scene(bee_callback_t scene, void* data) {
 	g_scene = scene;
@@ -61,26 +36,22 @@ int main(int argc, char* argv[]) {
 		if (strcmp(argv[i], "editor") == 0) {
 			editor = 1;
 		} else {
-			bee__log_warn("ARG: Unknown command '%s'", argv[i]);
+			mint_warn("ARG: Unknown command '%s'", argv[i]);
 		}
 	}
 
-	signal(SIGILL, signal_error);
-	signal(SIGSEGV, signal_error);
-	signal(SIGFPE, signal_error);
-
-	bee__log_init();
+	mint_init("8bee.log");
 	bee__transform_init();
 	bee__window_init();
 	bee__video_init();
 
 	if (editor) {
-		bee__log_info("ARG: Starting editor");
+		mint_info("ARG: Starting editor");
 	} else {
 		// bee__res_init();
 	}
 
-	bee__window_post_init();
+	bee__window_show();
 
 	for (;;) {
 		bee__window_update();

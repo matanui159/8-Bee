@@ -19,6 +19,7 @@
 #include "editor.h"
 #include <8bee.h>
 #include "res.h"
+#include <stdlib.h>
 
 static void editor_main() {
 

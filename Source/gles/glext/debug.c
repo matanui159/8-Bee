@@ -17,7 +17,7 @@
  */
 
 #include "debug.h"
-#include "../../log.h"
+#include <mint.h>
 #include <EGL/egl.h>
 
 _Bool bee__GL_debug = 0;
@@ -30,6 +30,6 @@ void bee__glext_debug_init() {
 		bee__glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
 		bee__glDebugMessageInsert = (PFNGLDEBUGMESSAGEINSERTKHRPROC)eglGetProcAddress("glDebugMessageInsertKHR");
 	} else {
-		bee__log_warn("GLES: GL_debug unsupported");
+		mint_warn("GLES: GL_debug unsupported");
 	}
 }
