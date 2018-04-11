@@ -1,19 +1,13 @@
-local colors = {}
-
-local shades = {0x0, 0x5, 0xA, 0xF}
-for _, r in ipairs(shades) do
-	for _, g in ipairs(shades) do
-		for _, b in ipairs(shades) do
-			if r ~= 0 or g ~= 0 or b ~= 0 then
-				table.insert(colors, (r << 12) | (g << 8) | (b << 4) | 0xF)
-			end
-		end
-	end
-end
-
-local function file_newext(file, ext)
-	return file:gsub("%.[^/\\]*$", "." .. ext)
-end
+local colors = {
+		0x0000, 0x005F, 0x00AF, 0x00FF, 0x050F, 0x055F, 0x05AF, 0x05FF,
+		0x0A0F, 0x0A5F, 0x0AAF, 0x0AFF, 0x0F0F, 0x0F5F, 0x0FAF, 0x0FFF,
+		0x500F, 0x505F, 0x50AF, 0x50FF, 0x550F, 0x555F, 0x55AF, 0x55FF,
+		0x5A0F, 0x5A5F, 0x5AAF, 0x5AFF, 0x5F0F, 0x5F5F, 0x5FAF, 0x5FFF,
+		0xA00F, 0xA05F, 0xA0AF, 0xA0FF, 0xA50F, 0xA55F, 0xA5AF, 0xA5FF,
+		0xAA0F, 0xAA5F, 0xAAAF, 0xAAFF, 0xAF0F, 0xAF5F, 0xAFAF, 0xAFFF,
+		0xF00F, 0xF05F, 0xF0AF, 0xF0FF, 0xF50F, 0xF55F, 0xF5AF, 0xF5FF,
+		0xFA0F, 0xFA5F, 0xFAAF, 0xFAFF, 0xFF0F, 0xFF5F, 0xFFAF, 0xFFFF
+}
 
 local function stream_in(path)
 	local file = io.open(path, "rb")
@@ -64,9 +58,8 @@ local function stream_dds(stream)
 	end
 end
 
-local function stream_c(type, prefix, file, stream)
-	local name = file:match("([^/\\%.]*)%.[^/\\]*$")
-	stream("static const " .. type .. " " .. prefix .. name .. "[]={")
+local function stream_c(var, stream)
+	stream("static const " .. var .. "[]={")
 
 	local first = true
 	return function(value, close)
@@ -84,17 +77,23 @@ local function stream_c(type, prefix, file, stream)
 end
 
 local function stream_bee(stream)
-	local prev = 0
+	local color = 0
 	local count = 0
 	local function flush(stream)
 		if count > 0 then
-			if prev >= 64 then
-				stream(0x40)
-				stream((prev - 64) >> 8)
-				stream((prev - 64) & 0xFF)
-			else
-				stream(prev)
+			local large = true
+			for i, c in ipairs(colors) do
+				if c == color then
+					stream(i - 1)
+					large = false
+					break
+				end
 			end
+			if large then
+				stream((color >> 12) | 0x40)
+				stream((color >> 4) & 0xFF)
+			end
+			
 			count = count - 1
 			if count > 0 then
 				while count > 128 do
@@ -102,9 +101,9 @@ local function stream_bee(stream)
 					count = count - 128
 				end
 				stream((count - 1) | 0x80)
+				count = 0
 			end
 		end
-		count = 0
 	end
 
 	stream(0x22)
@@ -119,31 +118,24 @@ local function stream_bee(stream)
 			stream(0x1A)
 			stream(nil, close)
 		else
-			local v = value + 64
-			if value & 0xF == 0 then
-				v = 0
+			if value & 0x8 then
+				value = value | 0xF
 			else
-				for i, c in ipairs(colors) do
-					if value == c then
-						v = i
-						break
-					end
-				end
+				value = 0
 			end
-
-			if v == prev then
+			if value == color then
 				count = count + 1
 			else
 				flush(stream)
-				prev = v
+				color = value
 				count = 1
 			end
 		end
 	end
 end
 
-local function dds2c(file, prefix)
-	local cfile = file_newext(file, "h")
+local function dds2c(file, var)
+	local cfile = file:gsub("dds", "h")
 	local input = stream_dds(stream_in(file))
 	local image = {}
 	for y = 128, 1, -1 do
@@ -153,17 +145,17 @@ local function dds2c(file, prefix)
 	end
 	input(true)
 
-	local output = stream_bee(stream_c("unsigned char", prefix, cfile, stream_out(cfile)))
+	local output = stream_bee(stream_c("unsigned char " .. var, stream_out(cfile)))
 	for i = 1, 128 * 128 do
 		output(image[i])
 	end
 	output(nil, true)
 end
 
-local function glsl2c(file, prefix)
-	local cfile = file_newext(file, "h")
+local function glsl2c(file, var)
+	local cfile = file:gsub("glsl", "h")
 	local input = stream_in(file)
-	local output = stream_c("char", prefix, cfile, stream_out(cfile))
+	local output = stream_c("char " .. var, stream_out(cfile))
 	while true do
 		local value = input()
 		if value then
@@ -177,6 +169,6 @@ local function glsl2c(file, prefix)
 	input(true)
 end
 
-glsl2c("../Source/gles/res/shader_main_vert.glsl", "bee__res_")
-glsl2c("../Source/gles/res/shader_main_frag.glsl", "bee__res_")
-dds2c("../Source/editor/res/editor.dds", "bee__editor_res_")
+glsl2c("../Source/gles/res/shader_main_vert.glsl", "bee__res_shader_main_vert")
+glsl2c("../Source/gles/res/shader_main_frag.glsl", "bee__res_shader_main_frag")
+dds2c("../Source/editor/res/editor.dds", "bee__editor_res_editor")

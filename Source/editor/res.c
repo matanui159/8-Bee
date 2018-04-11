@@ -17,6 +17,9 @@
  */
 
 #include "res.h"
+#include "../res.h"
+
+#include "res/editor.h"
 
 const bee_sprite_t bee__editor_cursor = {8, 0, 8, 8};
 const bee_sprite_t bee__editor_selector = {16, 0, 4, 4};
@@ -31,5 +34,5 @@ const bee_sprite_t bee__editor_music_font = {96, 40, 8, 8};
 const bee_sprite_t bee__editor_music_corner = {110, 118, 18, 10};
 
 void bee__editor_res_init() {
-
+	bee__res_data(sizeof(bee__editor_res_editor), bee__editor_res_editor);
 }

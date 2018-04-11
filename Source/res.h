@@ -1,5 +1,5 @@
 /*
- * editor.c
+ * res.h
  *
  * Copyright 2018 Joshua Michael Minter
  *
@@ -16,16 +16,9 @@
  * limitations under the License.
  */
 
-#include "editor.h"
-#include <8bee.h>
-#include "res.h"
-#include <stddef.h>
+#ifndef RES_H_
+#define RES_H_
 
-static void editor_main() {
-	bee_draw(&bee__editor_cursor);
-}
+void bee__res_data(int length, const unsigned char* data);
 
-void bee__editor_init() {
-	bee__editor_res_init();
-	bee_scene(editor_main, NULL);
-}
+#endif
